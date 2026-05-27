@@ -1027,3 +1027,16 @@ body.electron .hud-navbar {
     width: 7px;
     height: 7px;
 }
+
+/* WEBGL ORB CONTAINER */
+.organic-orb-container {
+    position: absolute;
+    top: 50%;
+    right: 5%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none; /* Let clicks pass through the orb to the workspace */
+}

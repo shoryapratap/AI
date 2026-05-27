@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Mic, ChevronDown } from 'lucide-react';
 
-const InputCapsule = ({ activeModel, setActiveModel, onSendMessage }) => {
+const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateChange }) => {
     const [query, setQuery] = useState('');
     const [isListening, setIsListening] = useState(false);
     const [isThinking, setIsThinking] = useState(false);
@@ -29,9 +29,14 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage }) => {
     };
 
     const handleMicClick = () => {
-        setIsListening(!isListening);
+        const newListeningState = !isListening;
+        setIsListening(newListeningState);
         
-        if (!isListening) {
+        if (onMicStateChange) {
+            onMicStateChange(newListeningState);
+        }
+        
+        if (!newListeningState) {
             setTimeout(() => {
                 setQuery('Analyze accounts and check balance');
                 setIsListening(false);
