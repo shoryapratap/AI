@@ -30,18 +30,22 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
 
     return (
         <div id="main-view" className={`view-panel ${isFocused ? 'active' : ''}`}>
-            <button 
-                className={`map-toggle-btn ${isMapOpen ? 'active' : ''}`} 
-                onClick={() => setIsMapOpen(!isMapOpen)}
-                title="Toggle Map Widget"
-            >
-                <Map size={20} />
-            </button>
+            <div className="widgets-container">
+                <button 
+                    className={`map-toggle-btn ${isMapOpen ? 'active' : ''}`} 
+                    onClick={() => setIsMapOpen(!isMapOpen)}
+                    title="Toggle Map Widget"
+                >
+                    <Map size={20} />
+                </button>
 
-            {isMapOpen && <MapWidget />}
+                {isMapOpen && <MapWidget />}
 
-            {/* AI Voice Orb */}
-            <VoiceOrb isUserTalking={isUserTalking} isAiTalking={isAiTalking} />
+                {/* AI Voice Orb - Fades out when map is open */}
+                <div className={`widget-fade ${isMapOpen ? 'hidden' : ''}`}>
+                    <VoiceOrb isUserTalking={isUserTalking} isAiTalking={isAiTalking} />
+                </div>
+            </div>
 
             <MessageWindow messages={messages} />
             

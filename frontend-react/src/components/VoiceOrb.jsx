@@ -13,6 +13,8 @@ const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
         const container = mountRef.current;
         const width = container.clientWidth;
         const height = container.clientHeight;
+        
+        container.style.pointerEvents = 'none'; // Ensure canvas never blocks clicks
 
         // SCENE & CAMERA
         const scene = new THREE.Scene();
@@ -25,6 +27,7 @@ const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
         });
         renderer.setSize(width, height);
         renderer.setPixelRatio(window.devicePixelRatio);
+        
         container.appendChild(renderer.domElement);
 
         // REALISTIC SHINE (RoomEnvironment)
@@ -32,64 +35,98 @@ const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
         scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 
         // SCENE LIGHTS
-        const light1 = new THREE.PointLight(0xff66ff, 30); // Increased
-        light1.position.set(5, 5, 5);
+        const light1 = new THREE.PointLight(0xff0055, 50);
         scene.add(light1);
 
-        const light2 = new THREE.PointLight(0x3366ff, 30); // Increased
-        light2.position.set(-5, -5, 5);
+        const light2 = new THREE.PointLight(0x0055ff, 50);
         scene.add(light2);
 
-        const light3 = new THREE.PointLight(0xffffff, 10); // Increased
-        light3.position.set(0, 0, 8);
+        const light3 = new THREE.PointLight(0x55ff00, 50);
         scene.add(light3);
 
-        // OUTER GLASS SPHERE
+        // OUTER GLASS SPHERE (PERFECT SOAP BUBBLE)
+        // Matches the exact rainbow thin-film interference seen in the reference image
         const outerSphere = new THREE.Mesh(
             new THREE.SphereGeometry(3, 128, 128),
             new THREE.MeshPhysicalMaterial({
                 color: 0xffffff,
+                metalness: 0.1,
+                roughness: 0,
+                transmission: 1.0, // Fully glassy
+                ior: 1.05, // Very low IOR like a thin bubble, minimal distortion of the core
+                thickness: 0.05, // Thin wall
+                iridescence: 1.0, // Maximum rainbow effect
+                iridescenceIOR: 1.33, // Water/soap IOR
+                iridescenceThicknessRange: [200, 400], // Creates the thick rainbow gradient on the edges
                 transparent: true,
-                opacity: 0.15, // Slightly more opaque for better reflections
-                roughness: 0, 
-                transmission: 1, 
-                thickness: 2, 
-                clearcoat: 1,
-                clearcoatRoughness: 0,
-                metalness: 0.2, // Increased metalness boosts shine
-                reflectivity: 1,
-                ior: 1.5,
-                envMapIntensity: 3.5 // Heavily boosts the realistic studio reflections
+                opacity: 1.0,
+                envMapIntensity: 2.0,
+                side: THREE.DoubleSide, // Renders both inside and outside reflections for maximum realism
+                depthWrite: false // Ensures inner core renders perfectly through the bubble
             })
         );
         scene.add(outerSphere);
+        // Removed the artificial shineSphere rims completely!
 
-        // OUTER SHINE (RIM LIGHTING)
-        const shineGeometry = new THREE.SphereGeometry(3.03, 64, 64); // Reduced from 3.15 to make border thinner
-        const shineMaterial = new THREE.MeshBasicMaterial({
-            color: 0xaaddff, // Subtle blue/cyan tint for the rim
-            transparent: true,
-            opacity: 0.15, // More visible rim
-            side: THREE.BackSide,
-            blending: THREE.AdditiveBlending // Makes the edges glow
-        });
-        const shineSphere = new THREE.Mesh(shineGeometry, shineMaterial);
-        scene.add(shineSphere);
+        // INNER BLACK LIQUID CORE
+        const innerCore = new THREE.Mesh(
+            new THREE.SphereGeometry(1.4, 64, 64),
+            new THREE.MeshPhysicalMaterial({
+                color: 0x020202, // Deep glossy black
+                roughness: 0.1,
+                metalness: 0.8,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.1,
+                envMapIntensity: 3.0 // Very reflective
+            })
+        );
+        scene.add(innerCore);
 
         // ANIMATION LOOP
         let animationFrameId;
+        let time = 0;
 
         const animate = () => {
             animationFrameId = requestAnimationFrame(animate);
+
+            time += 0.015;
+
+            // Orbiting colorful lights
+            light1.position.x = Math.sin(time * 0.7) * 5;
+            light1.position.y = Math.cos(time * 0.5) * 5;
+            light1.position.z = Math.cos(time * 0.3) * 5;
+            light1.color.setHSL((time * 0.1) % 1, 0.8, 0.6);
+
+            light2.position.x = Math.cos(time * 0.3) * 5;
+            light2.position.y = Math.sin(time * 0.5) * 5;
+            light2.position.z = Math.sin(time * 0.7) * 5;
+            light2.color.setHSL((time * 0.1 + 0.33) % 1, 0.8, 0.6);
+
+            light3.position.x = Math.sin(time * 0.5) * 5;
+            light3.position.y = Math.cos(time * 0.3) * 5;
+            light3.position.z = Math.sin(time * 0.7) * 5;
+            light3.color.setHSL((time * 0.1 + 0.66) % 1, 0.8, 0.6);
+
+            if (container) {
+                container.style.filter = 'none';
+            }
+
+            // Inner core rotation
+            innerCore.rotation.x += 0.005;
+            innerCore.rotation.y += 0.008;
 
             // Smoothly interpolate audioLevel towards targetAudioLevel
             audioLevelRef.current += (targetAudioLevelRef.current - audioLevelRef.current) * 0.1;
 
             const pulse = 1 + audioLevelRef.current * 0.25;
 
-            // sphere pulse
-            outerSphere.scale.set(pulse, pulse, pulse);
-            shineSphere.scale.set(pulse, pulse, pulse);
+            // Wobble effect to simulate liquid
+            const wobbleX = 1 + Math.sin(time * 2.0) * 0.05;
+            const wobbleY = 1 + Math.cos(time * 1.5) * 0.05;
+            const wobbleZ = 1 + Math.sin(time * 1.2) * 0.05;
+
+            // Combine pulse and liquid wobble
+            innerCore.scale.set(pulse * wobbleX, pulse * wobbleY, pulse * wobbleZ);
 
             renderer.render(scene, camera);
         };

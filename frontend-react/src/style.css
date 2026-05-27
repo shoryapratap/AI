@@ -1040,3 +1040,85 @@ body.electron .hud-navbar {
     z-index: 10;
     pointer-events: none; /* Let clicks pass through the orb to the workspace */
 }
+.widget-fade { transition: opacity 0.4s ease; opacity: 1; }
+.widget-fade.hidden { opacity: 0; pointer-events: none; }
+
+/* MAP TOGGLE BUTTON */
+.map-toggle-btn {
+    position: absolute;
+    right: 40px;
+    top: 70px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    pointer-events: auto !important;
+}
+
+.map-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.map-toggle-btn.active {
+    background: rgba(123, 79, 255, 0.2);
+    color: #7b4fff;
+    border-color: rgba(123, 79, 255, 0.4);
+    box-shadow: 0 0 15px rgba(123, 79, 255, 0.4);
+}
+
+/* MAP WIDGET POPUP */
+.map-widget {
+    position: absolute;
+    right: 40px;
+    top: 125px;
+    width: calc(100vw - 520px);
+    height: 60vh;
+    max-height: calc(100vh - 180px);
+    overflow: hidden;
+    padding: 12px;
+    z-index: 50;
+    pointer-events: auto !important;
+    
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01)), rgba(5, 5, 8, 0.15);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+                
+    transform-origin: top right;
+    animation: popupScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes popupScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.map-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%);
+    pointer-events: auto;
+}
+
+/* WIDGETS CONTAINER */
+.widgets-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+}
