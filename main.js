@@ -5,7 +5,7 @@ let mainWindow;
 
 function createWindow() {
     const icon = nativeImage.createFromPath(
-        path.join(__dirname, 'frontend', 'assets', 'icon.ico')
+        path.join(__dirname, 'frontend-react', 'dist', 'assets', 'icon.ico')
     );
 
     mainWindow = new BrowserWindow({

@@ -3,8 +3,6 @@ import Titlebar from './components/Titlebar'
 import Navbar from './components/Navbar'
 import MainWorkspace from './components/MainWorkspace'
 import SettingsPanel from './components/SettingsPanel'
-import MapWidget from './components/MapWidget'
-import { Map } from 'lucide-react'
 import './style.css'
 
 function App() {
@@ -14,7 +12,6 @@ function App() {
   
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [cubeClass, setCubeClass] = useState('')
-  const [isMapOpen, setIsMapOpen] = useState(false)
   const [isBreathing, setIsBreathing] = useState(false)
 
   // Handle View Transitions (3D Cube Rotation)
@@ -71,21 +68,6 @@ function App() {
         <main className="chat-workspace" id="chat-workspace-panel">
           {/* Background Ambient Glow */}
           <div className={`ambient-glow ${isBreathing ? 'breathe' : ''}`} id="ambient-glow-bg"></div>
-          
-          {/* Global Map Overlay (outside 3D context to prevent iframe bugs) */}
-          {activeView === 'main' && !isTransitioning && (
-              <>
-                  <button 
-                      className={`map-toggle-btn ${isMapOpen ? 'active' : ''}`} 
-                      onClick={() => setIsMapOpen(!isMapOpen)}
-                      title="Toggle Map Widget"
-                  >
-                      <Map size={20} />
-                  </button>
-
-                  {isMapOpen && <MapWidget />}
-              </>
-          )}
 
           <div className={`cube-room ${cubeClass}`} id="cube-room">
             {/* View 1: Main Workspace */}

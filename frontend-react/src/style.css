@@ -349,11 +349,11 @@ body.electron .workspace-container {
 
 /* Shrink panels to floating glass windows during transition */
 .cube-room.transitioning #main-view {
-    transform: rotateY(0deg) translateZ(-50vw) scale(0.85);
+    transform: rotateY(0deg) translateZ(-50vw) scale(1);
 }
 
 .cube-room.transitioning #settings-view {
-    transform: rotateY(-90deg) translateZ(-50vw) scale(0.85);
+    transform: rotateY(-90deg) translateZ(-50vw) scale(1);
 }
 
 /* WORKSPACE VIEW (CONVERSATIONAL HUB) */
@@ -405,7 +405,7 @@ body.electron .workspace-container {
 .map-toggle-btn {
     position: absolute;
     right: 40px;
-    top: 90px;
+    top: 70px;
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -440,7 +440,7 @@ body.electron .workspace-container {
 .map-widget {
     position: absolute;
     right: 40px;
-    top: 145px;
+    top: 125px;
     width: calc(100vw - 520px);
     height: 60vh;
     max-height: calc(100vh - 180px);
