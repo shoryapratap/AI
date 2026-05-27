@@ -27,8 +27,8 @@ function createWindow() {
         }
     });
 
-    // Load the frontend
-    mainWindow.loadFile(path.join(__dirname, 'frontend', 'index.html'));
+    // Load the frontend (React build)
+    mainWindow.loadFile(path.join(__dirname, 'frontend-react', 'dist', 'index.html'));
 
     // Show window gracefully after paint
     mainWindow.once('ready-to-show', () => {

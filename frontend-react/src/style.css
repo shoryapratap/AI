@@ -374,6 +374,146 @@ body.electron .workspace-container {
     justify-content: center;
 }
 
+/* MESSAGE WINDOW */
+.message-window {
+    position: absolute;
+    left: 40px;
+    top: 90px;
+    width: 400px;
+    height: 65vh;
+    max-height: calc(100vh - 180px);
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    
+    /* Ultra Glassmorphic effect */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01)), rgba(5, 5, 8, 0.15);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    
+    /* hide scrollbar */
+    scrollbar-width: none;
+}
+
+/* MAP WIDGET BUTTON */
+.map-toggle-btn {
+    position: absolute;
+    right: 40px;
+    top: 90px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    pointer-events: auto !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.map-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
+    transform: scale(1.05);
+}
+
+.map-toggle-btn.active {
+    background: rgba(123, 79, 255, 0.3);
+    border-color: rgba(123, 79, 255, 0.6);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(123, 79, 255, 0.4);
+}
+
+/* MAP WIDGET POPUP */
+.map-widget {
+    position: absolute;
+    right: 40px;
+    top: 145px;
+    width: calc(100vw - 520px);
+    height: 60vh;
+    max-height: calc(100vh - 180px);
+    overflow: hidden;
+    padding: 12px;
+    z-index: 50;
+    pointer-events: auto !important;
+    
+    /* Ultra Glassmorphic effect */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01)), rgba(5, 5, 8, 0.15);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+                
+    /* Popup Animation */
+    transform-origin: top right;
+    animation: popupScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes popupScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.map-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+    /* Beautiful Dark Mode Filter for OpenStreetMap */
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%);
+    pointer-events: auto;
+}
+
+.message-window::-webkit-scrollbar {
+    display: none;
+}
+
+.message-bubble {
+    padding: 14px 20px;
+    border-radius: 20px;
+    max-width: 85%;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+    animation: bubbleFadeIn 0.3s ease;
+}
+
+.message-user {
+    align-self: flex-end;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
+    border-bottom-right-radius: 4px;
+}
+
+.message-ai {
+    align-self: flex-start;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(100, 60, 255, 0.3);
+    color: var(--text-secondary);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 4px 12px rgba(100, 60, 255, 0.1);
+}
+
+@keyframes bubbleFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* Custom Scrollbar for Settings view */
 #settings-view::-webkit-scrollbar {
     width: 6px;
@@ -456,7 +596,7 @@ body.electron .workspace-container {
     transition: all 0.2s ease;
 }
 
-.capsule-btn i {
+.capsule-btn svg {
     width: 20px;
     height: 20px;
 }
@@ -566,7 +706,7 @@ body.electron .workspace-container {
     border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-.settings-card .card-header i {
+.settings-card .card-header svg {
     width: 18px;
     height: 18px;
     color: var(--text-secondary);
