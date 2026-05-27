@@ -69,10 +69,19 @@ const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
         // Removed the artificial shineSphere rims completely!
 
         // INNER BLACK LIQUID CORE
+        const innerCoreGeometry = new THREE.SphereGeometry(1.4, 64, 64);
+        
+        // Store original vertices for liquid ripple math
+        const positionAttribute = innerCoreGeometry.attributes.position;
+        const vertexData = [];
+        for (let i = 0; i < positionAttribute.count; i++) {
+            vertexData.push(new THREE.Vector3().fromBufferAttribute(positionAttribute, i));
+        }
+
         const innerCore = new THREE.Mesh(
-            new THREE.SphereGeometry(1.4, 64, 64),
+            innerCoreGeometry,
             new THREE.MeshPhysicalMaterial({
-                color: 0x020202, // Deep glossy black
+                color: 0x000000, // Absolute pure glossy black
                 roughness: 0.1,
                 metalness: 0.8,
                 clearcoat: 1.0,
@@ -120,12 +129,33 @@ const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
 
             const pulse = 1 + audioLevelRef.current * 0.25;
 
-            // Wobble effect to simulate liquid
-            const wobbleX = 1 + Math.sin(time * 2.0) * 0.05;
-            const wobbleY = 1 + Math.cos(time * 1.5) * 0.05;
-            const wobbleZ = 1 + Math.sin(time * 1.2) * 0.05;
+            // Organic liquid vertex ripples (huge amorphous blobs)
+            const timeScaled = time * 2.5;
+            // Massive deformation intensity (base 0.15, peaks to 0.6+ during talking)
+            const rippleIntensity = 0.15 + audioLevelRef.current * 0.45; 
+            
+            for (let i = 0; i < positionAttribute.count; i++) {
+                const v = vertexData[i];
+                // Lower frequency (0.8, 1.1) for massive, sweeping tendril-like stretches
+                const wave1 = Math.sin(v.x * 0.8 + timeScaled) * rippleIntensity;
+                const wave2 = Math.cos(v.y * 1.1 + timeScaled * 0.8) * rippleIntensity;
+                const wave3 = Math.sin(v.z * 0.9 + timeScaled * 1.2) * rippleIntensity;
+                
+                // Extra high-frequency micro-ripples when talking
+                const talkRipples = audioLevelRef.current * Math.sin(v.x * 3.0 - timeScaled * 2.0) * 0.05;
+                
+                // Prevent vertices from inverting through the center (clamp min to 0.1)
+                const displacement = Math.max(0.1, 1.0 + wave1 + wave2 + wave3 + talkRipples);
+                positionAttribute.setXYZ(i, v.x * displacement, v.y * displacement, v.z * displacement);
+            }
+            
+            positionAttribute.needsUpdate = true;
+            innerCore.geometry.computeVertexNormals(); // Crucial: recalculate normals so the glossy reflections warp over the ripples
 
-            // Combine pulse and liquid wobble
+            // Global scale scatter pulse (extreme squashing on separate axes)
+            const wobbleX = 1 + Math.sin(time * 3.0) * 0.25;
+            const wobbleY = 1 + Math.cos(time * 2.2) * 0.25;
+            const wobbleZ = 1 + Math.sin(time * 1.7) * 0.25;
             innerCore.scale.set(pulse * wobbleX, pulse * wobbleY, pulse * wobbleZ);
 
             renderer.render(scene, camera);
