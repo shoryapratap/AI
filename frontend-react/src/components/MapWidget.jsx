@@ -1,8 +1,12 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
-const MapWidget = () => {
+const MapWidget = ({ onClose }) => {
     return (
         <div className="map-widget">
+            <button className="map-close-btn" onClick={onClose} title="Close Map">
+                <X size={20} />
+            </button>
             <iframe 
                 title="World Map"
                 className="map-iframe"

@@ -378,10 +378,11 @@ body.electron .workspace-container {
 .message-window {
     position: absolute;
     left: 40px;
-    top: 90px;
+    top: 250px;
     width: 400px;
-    height: 65vh;
-    max-height: calc(100vh - 180px);
+    bottom: 150px; /* Aligned with center hub bottom */
+    height: auto;
+    max-height: none;
     padding: 20px;
     overflow-y: auto;
     display: flex;
@@ -440,10 +441,10 @@ body.electron .workspace-container {
 .map-widget {
     position: absolute;
     right: 40px;
-    top: 125px;
     width: calc(100vw - 520px);
-    height: 60vh;
-    max-height: calc(100vh - 180px);
+    top: 90px;
+    bottom: 150px;
+    height: auto;
     overflow: hidden;
     padding: 12px;
     z-index: 50;
@@ -1031,14 +1032,16 @@ body.electron .hud-navbar {
 /* WEBGL ORB CONTAINER */
 .organic-orb-container {
     position: absolute;
-    top: 50%;
-    right: 5%;
+    top: calc(50% - 30px); /* Mathematically centered vertically between top:90 and bottom:150 */
+    right: calc(12% - 25px); /* Horizontally centered with the 250px windows */
     transform: translateY(-50%);
+    width: 300px;
+    height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    pointer-events: none; /* Let clicks pass through the orb to the workspace */
+    pointer-events: none; /* Let clicks pass through if needed, though orb itself might be interactive */
 }
 .widget-fade { transition: opacity 0.4s ease; opacity: 1; }
 .widget-fade.hidden { opacity: 0; pointer-events: none; }
@@ -1080,10 +1083,10 @@ body.electron .hud-navbar {
 .map-widget {
     position: absolute;
     right: 40px;
-    top: 125px;
     width: calc(100vw - 520px);
-    height: 60vh;
-    max-height: calc(100vh - 180px);
+    top: 90px;
+    bottom: 150px;
+    height: auto;
     overflow: hidden;
     padding: 12px;
     z-index: 50;
@@ -1104,6 +1107,30 @@ body.electron .hud-navbar {
 @keyframes popupScale {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
+}
+
+.map-close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s;
+}
+
+.map-close-btn:hover {
+    background: #e81123;
+    color: white;
+    transform: scale(1.1);
 }
 
 .map-iframe {

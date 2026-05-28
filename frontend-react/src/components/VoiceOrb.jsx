@@ -69,7 +69,7 @@ const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
         // Removed the artificial shineSphere rims completely!
 
         // INNER BLACK LIQUID CORE
-        const innerCoreGeometry = new THREE.SphereGeometry(1.4, 64, 64);
+        const innerCoreGeometry = new THREE.SphereGeometry(1.0, 64, 64);
         
         // Store original vertices for liquid ripple math
         const positionAttribute = innerCoreGeometry.attributes.position;
@@ -127,12 +127,13 @@ const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
             // Smoothly interpolate audioLevel towards targetAudioLevel
             audioLevelRef.current += (targetAudioLevelRef.current - audioLevelRef.current) * 0.1;
 
-            const pulse = 1 + audioLevelRef.current * 0.25;
+            // Keep base scale at 1.0 so it doesn't grow in volume, just ripples
+            const pulse = 1.0;
 
             // Organic liquid vertex ripples (huge amorphous blobs)
             const timeScaled = time * 2.5;
-            // Massive deformation intensity (base 0.15, peaks to 0.6+ during talking)
-            const rippleIntensity = 0.15 + audioLevelRef.current * 0.45; 
+            // Deformation intensity
+            const rippleIntensity = 0.05 + audioLevelRef.current * 0.15; 
             
             for (let i = 0; i < positionAttribute.count; i++) {
                 const v = vertexData[i];
@@ -153,9 +154,9 @@ const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
             innerCore.geometry.computeVertexNormals(); // Crucial: recalculate normals so the glossy reflections warp over the ripples
 
             // Global scale scatter pulse (extreme squashing on separate axes)
-            const wobbleX = 1 + Math.sin(time * 3.0) * 0.25;
-            const wobbleY = 1 + Math.cos(time * 2.2) * 0.25;
-            const wobbleZ = 1 + Math.sin(time * 1.7) * 0.25;
+            const wobbleX = 1 + Math.sin(time * 3.0) * 0.1;
+            const wobbleY = 1 + Math.cos(time * 2.2) * 0.1;
+            const wobbleZ = 1 + Math.sin(time * 1.7) * 0.1;
             innerCore.scale.set(pulse * wobbleX, pulse * wobbleY, pulse * wobbleZ);
 
             renderer.render(scene, camera);
