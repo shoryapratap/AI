@@ -97,10 +97,10 @@ async def main():
                         b64_data = base64.b64encode(data).decode('utf-8')
                         msg = {
                             "realtimeInput": {
-                                "audio": {
+                                "mediaChunks": [{
                                     "mimeType": "audio/pcm;rate=16000",
                                     "data": b64_data
-                                }
+                                }]
                             }
                         }
                         await ws.send(json.dumps(msg))

@@ -67,10 +67,10 @@ export function useGeminiLive() {
 
                 wsRef.current.send(JSON.stringify({
                     realtimeInput: {
-                        audio: {
+                        mediaChunks: [{
                             mimeType: 'audio/pcm;rate=16000',
                             data: base64Data
-                        }
+                        }]
                     }
                 }));
             };
@@ -90,6 +90,10 @@ export function useGeminiLive() {
             isPlayingRef.current = false;
             setIsAiTalking(false);
             return;
+        }
+
+        if (audioContextRef.current.state === 'suspended') {
+            audioContextRef.current.resume();
         }
 
         isPlayingRef.current = true;
