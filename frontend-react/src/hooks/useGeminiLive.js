@@ -189,7 +189,6 @@ export function useGeminiLive() {
                         return updated;
                     });
                 }
-            }
             
             if (msg.serverContent && msg.serverContent.turnComplete) {
                 // The AI finished its turn, reset the active buffer
