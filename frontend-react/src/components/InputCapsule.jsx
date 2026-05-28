@@ -61,7 +61,6 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    disabled={isVoiceConnected}
                 />
                 
                 <div className="capsule-right-controls">
