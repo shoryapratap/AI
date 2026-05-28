@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Mic, ChevronDown } from 'lucide-react';
 
-const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateChange }) => {
+const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateChange, isVoiceConnected, startVoice, stopVoice, voiceError }) => {
     const [query, setQuery] = useState('');
     const [isListening, setIsListening] = useState(false);
     const [isThinking, setIsThinking] = useState(false);
@@ -29,20 +29,14 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
     };
 
     const handleMicClick = () => {
-        const newListeningState = !isListening;
-        setIsListening(newListeningState);
-        
-        if (onMicStateChange) {
-            onMicStateChange(newListeningState);
-        }
-        
-        if (!newListeningState) {
-            setTimeout(() => {
-                setQuery('Analyze accounts and check balance');
-                setIsListening(false);
-            }, 2500);
+        if (isVoiceConnected) {
+            if (stopVoice) stopVoice();
+            setIsListening(false);
+            if (onMicStateChange) onMicStateChange(false);
         } else {
-            setQuery('');
+            if (startVoice) startVoice();
+            setIsListening(true);
+            if (onMicStateChange) onMicStateChange(true);
         }
     };
 
@@ -53,7 +47,7 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
     const modelName = activeModel === 'flash' ? 'Emma-Flash' : (activeModel === 'pro' ? 'Emma-Pro' : 'Emma-Ultra');
 
     return (
-        <div className="capsule-container">
+        <div className="capsule-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div className="input-capsule" style={{ borderColor: isThinking ? 'rgba(255, 255, 255, 0.3)' : '' }}>
                 <button className="capsule-btn attach-btn" title="Add files" onClick={handleAttach}>
                     <Plus size={20} />
@@ -62,12 +56,12 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
                 <input 
                     type="text" 
                     id="chat-input" 
-                    placeholder={isListening ? 'Listening to voice prompt...' : 'Ask Emma...'}
+                    placeholder={isVoiceConnected ? 'Gemini Live Voice is active...' : 'Ask Emma...'}
                     autoComplete="off"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    disabled={isListening}
+                    disabled={isVoiceConnected}
                 />
                 
                 <div className="capsule-right-controls">
@@ -81,14 +75,15 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
                         title="Use microphone"
                         onClick={handleMicClick}
                         style={{
-                            color: isListening ? '#ef4444' : '',
-                            backgroundColor: isListening ? 'rgba(239, 68, 68, 0.08)' : ''
+                            color: isVoiceConnected ? '#ef4444' : '',
+                            backgroundColor: isVoiceConnected ? 'rgba(239, 68, 68, 0.08)' : ''
                         }}
                     >
                         <Mic size={20} />
                     </button>
                 </div>
             </div>
+            {voiceError && <div style={{ color: '#f43f5e', fontSize: '0.85rem', marginTop: '8px' }}>{voiceError}</div>}
         </div>
     );
 };

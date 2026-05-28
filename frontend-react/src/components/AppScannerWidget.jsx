@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Radar, FolderPlus, Play, Box, Globe, Code, Music, Image as ImageIcon, Gamepad2, MessageSquare, X } from 'lucide-react';
+import { ScanLine, FolderPlus, X, Play, Globe, Code, Music, Image as ImageIcon, Gamepad2, MessageSquare, Monitor } from 'lucide-react';
 import './SystemWidgets.css';
 
 const MOCK_APPS = [
@@ -16,13 +16,51 @@ const AppScannerWidget = ({ onClose }) => {
     const [scannedApps, setScannedApps] = useState([]);
     const [activeTab, setActiveTab] = useState('All Apps');
 
-    const handleScan = () => {
+    const handleScan = async () => {
+        if (isScanning) return;
         setIsScanning(true);
-        setScannedApps([]);
-        setTimeout(() => {
-            setScannedApps(MOCK_APPS);
+        
+        try {
+            if (window.electronAPI && window.electronAPI.scanApps) {
+                const apps = await window.electronAPI.scanApps();
+                
+                const appsWithIcons = apps.map(app => {
+                    let fallbackIcon = <Monitor size={32} color="#94a3b8" />;
+                    let group = null;
+
+                    const lowerName = app.name.toLowerCase();
+                    if (lowerName.includes('browser') || lowerName.includes('chrome') || lowerName.includes('edge') || lowerName.includes('brave') || lowerName.includes('firefox')) {
+                        fallbackIcon = <Globe size={32} color="#3b82f6" />;
+                        group = 'Development';
+                    } else if (lowerName.includes('code') || lowerName.includes('studio') || lowerName.includes('git')) {
+                        fallbackIcon = <Code size={32} color="#10b981" />;
+                        group = 'Development';
+                    } else if (lowerName.includes('music') || lowerName.includes('spotify') || lowerName.includes('media')) {
+                        fallbackIcon = <Music size={32} color="#ec4899" />;
+                        group = 'Media';
+                    } else if (lowerName.includes('game') || lowerName.includes('xbox') || lowerName.includes('steam')) {
+                        fallbackIcon = <Gamepad2 size={32} color="#8b5cf6" />;
+                        group = 'Media';
+                    } else if (lowerName.includes('chat') || lowerName.includes('discord') || lowerName.includes('whatsapp') || lowerName.includes('teams')) {
+                        fallbackIcon = <MessageSquare size={32} color="#ef4444" />;
+                        group = 'Development';
+                    }
+                    
+                    return { ...app, fallbackIcon, group };
+                });
+                
+                setScannedApps(appsWithIcons);
+            } else {
+                // Fallback for browser dev mode
+                setTimeout(() => {
+                    setScannedApps(MOCK_APPS);
+                }, 1000);
+            }
+        } catch (error) {
+            console.error("Failed to scan apps:", error);
+        } finally {
             setIsScanning(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -50,7 +88,11 @@ const AppScannerWidget = ({ onClose }) => {
                             {scannedApps.map(app => (
                                 <div key={app.id} className="app-card">
                                     <div className="app-card-icon-wrapper">
-                                        {app.icon}
+                                        {app.iconBase64 ? (
+                                            <img src={app.iconBase64} alt={app.name} className="native-app-icon" />
+                                        ) : (
+                                            app.fallbackIcon || app.icon
+                                        )}
                                     </div>
                                     <span className="app-card-name">{app.name}</span>
                                 </div>
@@ -98,8 +140,14 @@ const AppScannerWidget = ({ onClose }) => {
                                 {scannedApps
                                     .filter(app => app.group === activeTab)
                                     .map(app => (
-                                        <div key={app.id} className="group-app-item">
-                                            <div className="group-app-icon">{app.icon}</div>
+                                        <div className="group-app-item" key={app.id}>
+                                            <div className="group-app-icon">
+                                                {app.iconBase64 ? (
+                                                    <img src={app.iconBase64} alt={app.name} className="native-app-icon-small" />
+                                                ) : (
+                                                    app.fallbackIcon || app.icon
+                                                )}
+                                            </div>
                                             <span>{app.name}</span>
                                         </div>
                                     ))}

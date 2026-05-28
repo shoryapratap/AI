@@ -9,29 +9,62 @@ import PlaceholderWidget from './PlaceholderWidget';
 import FloatingActionSidebar from './FloatingActionSidebar';
 import AppScannerWidget from './AppScannerWidget';
 import { Map, Camera, MonitorPlay } from 'lucide-react';
+import { useGeminiLive } from '../hooks/useGeminiLive';
 
 const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
-    const [messages, setMessages] = useState([
-        { role: 'ai', content: 'Hello! I am Emma. How can I help you control your PC today?' }
-    ]);
+
     const [isMapOpen, setIsMapOpen] = useState(false);
     const [isAppScannerOpen, setIsAppScannerOpen] = useState(false);
     const [isAiTalking, setIsAiTalking] = useState(false);
     const [isUserTalking, setIsUserTalking] = useState(false);
 
-    const handleSendMessage = (content) => {
+    const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage } = useGeminiLive();
+
+    const displayAiTalking = isAiTalking || geminiAiTalking;
+    const displayUserTalking = isUserTalking || geminiUserTalking;
+
+    const handleSendMessage = async (content) => {
+        if (isConnected) {
+            // If live voice is active, seamlessly inject the text message into the live WebSocket!
+            sendTextMessage(content);
+            return;
+        }
+
+        // Fallback to text-only REST API if voice is disabled
         setMessages(prev => [...prev, { role: 'user', content }]);
         setIsAiTalking(true);
 
-        // Mock AI response
-        setTimeout(() => {
-            setMessages(prev => [...prev, { role: 'ai', content: 'I am a mock response. The Python backend is not connected yet!' }]);
+        try {
+            const rawKey = localStorage.getItem('geminiApiKey') || '';
+            const API_KEY = rawKey.replace(/['"]/g, '').trim();
             
-            // Keep the animation going slightly longer after response arrives to simulate talking
-            setTimeout(() => {
+            if (!API_KEY) {
+                setMessages(prev => [...prev, { role: 'ai', content: 'Error: Gemini API Key is missing. Please add it in settings.' }]);
                 setIsAiTalking(false);
-            }, 2000);
-        }, 1000);
+                return;
+            }
+
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: content }] }]
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error(`API Error: ${res.status} ${res.statusText}`);
+            }
+            
+            const data = await res.json();
+            const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+            
+            setMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
+        } catch (err) {
+            setMessages(prev => [...prev, { role: 'ai', content: `Error connecting to Gemini: ${err.message}` }]);
+        } finally {
+            setIsAiTalking(false);
+        }
     };
 
     return (
@@ -45,7 +78,7 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
                 {/* Central Placeholder Window */}
                 <PlaceholderWidget title="Main Center Hub" className="placeholder-center" />
                 <DateTimeWidget />
-                <VoiceOrb isUserTalking={isUserTalking} isAiTalking={isAiTalking} />
+                <VoiceOrb isUserTalking={displayUserTalking} isAiTalking={displayAiTalking} />
                 <SystemStatusWidget />
             </div>
 
@@ -77,6 +110,10 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
                     setActiveModel={setActiveModel} 
                     onSendMessage={handleSendMessage}
                     onMicStateChange={(isListening) => setIsUserTalking(isListening)}
+                    isVoiceConnected={isConnected}
+                    startVoice={startConversation}
+                    stopVoice={stopConversation}
+                    voiceError={error}
                 />
             </div>
         </div>

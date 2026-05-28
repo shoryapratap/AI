@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, nativeImage } = require('electron');
 const path = require('path');
+const { scanApps } = require('./control/appScanner');
 
 let mainWindow;
 
@@ -64,6 +65,15 @@ ipcMain.on('win-maximize', () => {
 
 ipcMain.on('win-close', () => {
     if (mainWindow) mainWindow.close();
+});
+
+ipcMain.handle('scan-apps', async () => {
+    try {
+        return await scanApps();
+    } catch (err) {
+        console.error('Error scanning apps via IPC:', err);
+        return [];
+    }
 });
 
 // App lifecycle

@@ -10,5 +10,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Listen for state changes from main (maximized / normal)
     onWindowStateChange: (callback) => {
         ipcRenderer.on('win-state-change', (_event, state) => callback(state));
-    }
+    },
+
+    // App Scanner
+    scanApps: () => ipcRenderer.invoke('scan-apps')
 });

@@ -225,56 +225,23 @@ body.electron .workspace-container {
     overflow: hidden;
 }
 
-/* 3D CUBIC ROOM WRAPPER */
+/* 3D CUBIC ROOM WRAPPER (Now 2D Safe Fade) */
 .cube-room {
     width: 100%;
     height: 100%;
     position: absolute;
-    transform-style: preserve-3d;
-    will-change: transform;
-    transform: translateZ(50vw) rotateY(0deg);
+    transition: opacity 0.3s ease;
 }
 
-/* 3D Recess & Rotate Animations */
-.cube-room.to-settings {
-    animation: rotateToSettings 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+.cube-room.fade-out {
+    opacity: 0;
 }
 
-.cube-room.to-workspace {
-    animation: rotateToWorkspace 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+.cube-room.fade-in {
+    opacity: 1;
 }
 
-@keyframes rotateToSettings {
-    0% {
-        transform: translateZ(50vw) rotateY(0deg);
-    }
-    28% {
-        transform: translateZ(12vw) rotateY(0deg);
-    }
-    72% {
-        transform: translateZ(12vw) rotateY(90deg);
-    }
-    100% {
-        transform: translateZ(50vw) rotateY(90deg);
-    }
-}
-
-@keyframes rotateToWorkspace {
-    0% {
-        transform: translateZ(50vw) rotateY(90deg);
-    }
-    28% {
-        transform: translateZ(12vw) rotateY(90deg);
-    }
-    72% {
-        transform: translateZ(12vw) rotateY(0deg);
-    }
-    100% {
-        transform: translateZ(50vw) rotateY(0deg);
-    }
-}
-
-/* VIEW PANELS (CUBE FACES) */
+/* VIEW PANELS */
 .view-panel {
     position: absolute;
     top: 0;
@@ -284,27 +251,23 @@ body.electron .workspace-container {
     border-radius: 0px;
     background: transparent;
     
-    display: flex;
+    display: none; /* HARD HIDE WHEN INACTIVE */
     flex-direction: column;
     overflow-y: auto;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    will-change: transform, opacity;
     
-    /* Active transition opacity (NO BLUR for crisp text) */
-    opacity: 0.08;
+    opacity: 0;
     pointer-events: none;
-    transition: opacity 1.2s ease, 
-                transform 0.8s cubic-bezier(0.25, 1, 0.5, 1),
-                border-radius 0.8s ease;
+    transition: opacity 0.3s ease;
 }
 
 .view-panel.active {
+    display: flex; /* HARD SHOW WHEN ACTIVE */
     opacity: 1;
-    pointer-events: auto;
+    pointer-events: auto !important;
+    z-index: 100;
 }
 
-/* Glassy Shroud pseudo-element (opacity animated for 60fps performance) */
+/* Glassy Shroud pseudo-element */
 .view-panel::before {
     content: '';
     position: absolute;
@@ -315,9 +278,7 @@ body.electron .workspace-container {
     border-radius: inherit;
     pointer-events: none;
     z-index: -1;
-    opacity: 0;
-    will-change: opacity;
-    transition: opacity 0.8s ease, border-color 0.8s ease;
+    opacity: 1;
     
     /* Premium Glass Styles */
     background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 70%), 
@@ -327,33 +288,6 @@ body.electron .workspace-container {
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.75), 
                 inset 0 1px 1px rgba(255, 255, 255, 0.15);
-}
-
-/* Glassy Shroud only activates when the cubic room is transitioning */
-.cube-room.transitioning .view-panel::before {
-    opacity: 1;
-}
-
-.cube-room.transitioning .view-panel.active::before {
-    border-color: rgba(255, 255, 255, 0.18);
-}
-
-/* Face positions in 3D cubic space */
-#main-view {
-    transform: rotateY(0deg) translateZ(-50vw) scale(1);
-}
-
-#settings-view {
-    transform: rotateY(-90deg) translateZ(-50vw) scale(1);
-}
-
-/* Shrink panels to floating glass windows during transition */
-.cube-room.transitioning #main-view {
-    transform: rotateY(0deg) translateZ(-50vw) scale(1);
-}
-
-.cube-room.transitioning #settings-view {
-    transform: rotateY(-90deg) translateZ(-50vw) scale(1);
 }
 
 /* WORKSPACE VIEW (CONVERSATIONAL HUB) */
