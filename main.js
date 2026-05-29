@@ -36,7 +36,7 @@ function createWindow() {
         mainWindow.show();
     });
 
-    // Open DevTools in dev mode (comment out for production)
+    // Open DevTools in dev mode
     // mainWindow.webContents.openDevTools();
 
     mainWindow.on('closed', () => {

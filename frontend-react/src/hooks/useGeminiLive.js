@@ -19,20 +19,23 @@ export function useGeminiLive() {
     const playQueueRef = useRef([]);
     const isPlayingRef = useRef(false);
     const nextPlayTimeRef = useRef(0);
+    const activeNodesRef = useRef(0);
     
     // Keep track of the current streaming AI text
     const currentAiResponseRef = useRef('');
 
     const connectMicrophone = async () => {
         try {
+            // Create context synchronously during user gesture
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+            audioContext.resume().catch(console.error);
+            audioContextRef.current = audioContext;
+
             const stream = await navigator.mediaDevices.getUserMedia({ audio: {
                 channelCount: 1,
                 sampleRate: 16000
             }});
             streamRef.current = stream;
-
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-            audioContextRef.current = audioContext;
 
             const source = audioContext.createMediaStreamSource(stream);
             sourceRef.current = source;
@@ -59,24 +62,30 @@ export function useGeminiLive() {
                 }
 
                 const uint8Data = new Uint8Array(pcmData.buffer);
+                const chunkSize = 0x8000;
                 let binary = '';
-                for (let i = 0; i < uint8Data.byteLength; i++) {
-                    binary += String.fromCharCode(uint8Data[i]);
+                for (let i = 0; i < uint8Data.length; i += chunkSize) {
+                    binary += String.fromCharCode.apply(null, uint8Data.subarray(i, i + chunkSize));
                 }
                 const base64Data = btoa(binary);
 
                 wsRef.current.send(JSON.stringify({
                     realtimeInput: {
-                        mediaChunks: [{
+                        audio: {
                             mimeType: 'audio/pcm;rate=16000',
                             data: base64Data
-                        }]
+                        }
                     }
                 }));
             };
 
             source.connect(processor);
-            processor.connect(audioContext.destination);
+            
+            // Connect to a muted GainNode to keep processor running without echo feedback
+            const dummyGain = audioContext.createGain();
+            dummyGain.gain.value = 0;
+            processor.connect(dummyGain);
+            dummyGain.connect(audioContext.destination);
 
         } catch (err) {
             console.error('Microphone error:', err);
@@ -87,65 +96,72 @@ export function useGeminiLive() {
 
     const processAudioQueue = () => {
         if (!audioContextRef.current || playQueueRef.current.length === 0) {
-            isPlayingRef.current = false;
-            setIsAiTalking(false);
             return;
         }
 
         if (audioContextRef.current.state === 'suspended') {
-            audioContextRef.current.resume();
+            audioContextRef.current.resume().catch(console.error);
         }
 
-        isPlayingRef.current = true;
-        setIsAiTalking(true);
+        while (playQueueRef.current.length > 0) {
+            const chunk = playQueueRef.current.shift();
+            
+            const buffer = audioContextRef.current.createBuffer(1, chunk.length, 24000); 
+            buffer.copyToChannel(chunk, 0);
 
-        const chunk = playQueueRef.current.shift();
-        
-        const buffer = audioContextRef.current.createBuffer(1, chunk.length, 24000); 
-        buffer.copyToChannel(chunk, 0);
+            const source = audioContextRef.current.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContextRef.current.destination);
 
-        const source = audioContextRef.current.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioContextRef.current.destination);
-
-        const currentTime = audioContextRef.current.currentTime;
-        if (nextPlayTimeRef.current < currentTime) {
-            nextPlayTimeRef.current = currentTime;
-        }
-
-        source.start(nextPlayTimeRef.current);
-        nextPlayTimeRef.current += buffer.duration;
-
-        source.onended = () => {
-            if (playQueueRef.current.length === 0) {
-                isPlayingRef.current = false;
-                setIsAiTalking(false);
+            const currentTime = audioContextRef.current.currentTime;
+            if (nextPlayTimeRef.current < currentTime) {
+                nextPlayTimeRef.current = currentTime;
             }
-        };
 
-        processAudioQueue();
+            source.start(nextPlayTimeRef.current);
+            nextPlayTimeRef.current += buffer.duration;
+            activeNodesRef.current += 1;
+            
+            setIsAiTalking(true);
+
+            source.onended = () => {
+                activeNodesRef.current -= 1;
+                if (activeNodesRef.current === 0) {
+                    setIsAiTalking(false);
+                }
+            };
+        }
     };
 
-    const handleWebSocketMessage = useCallback((event) => {
+    const handleWebSocketMessage = useCallback(async (event) => {
         try {
-            const msg = JSON.parse(event.data);
+            let data = event.data;
+            if (typeof data !== 'string') {
+                if (typeof data.text === 'function') {
+                    data = await data.text();
+                } else {
+                    data = data.toString();
+                }
+            }
+
+            const msg = JSON.parse(data);
             let newText = '';
 
             if (msg.serverContent) {
                 const content = msg.serverContent;
                 
-                // Parse old modelTurn text if present (for backward compatibility)
                 if (content.modelTurn && content.modelTurn.parts) {
                     for (const part of content.modelTurn.parts) {
                         if (part.text) {
                             newText += part.text;
                         }
-                        // Extract streaming audio
                         if (part.inlineData && part.inlineData.data) {
+                            window.audioChunksReceived = (window.audioChunksReceived || 0) + 1;
                             const binary = atob(part.inlineData.data);
                             const len = binary.length;
-                            const bytes = new Uint8Array(len);
-                            for (let i = 0; i < len; i++) {
+                            const evenLen = len - (len % 2);
+                            const bytes = new Uint8Array(evenLen);
+                            for (let i = 0; i < evenLen; i++) {
                                 bytes[i] = binary.charCodeAt(i);
                             }
                             const pcm16 = new Int16Array(bytes.buffer);
@@ -156,96 +172,124 @@ export function useGeminiLive() {
                             }
 
                             playQueueRef.current.push(float32);
-                            
-                            if (!isPlayingRef.current) {
-                                processAudioQueue();
-                            }
+                            processAudioQueue();
                         }
                     }
                 }
                 
-                // Parse new outputAudioTranscription
-                if (content.outputTranscription) {
-                    if (content.outputTranscription.text) {
-                        newText += content.outputTranscription.text;
-                    } else if (content.outputTranscription.parts) {
-                        for (const p of content.outputTranscription.parts) {
-                            if (p.text) newText += p.text;
-                        }
+                if (content.outputTranscription && content.outputTranscription.text) {
+                    newText += content.outputTranscription.text;
+                } else if (content.outputTranscription && content.outputTranscription.parts) {
+                    for (const p of content.outputTranscription.parts) {
+                        if (p.text) newText += p.text;
                     }
                 }
             }
                 
-                if (newText) {
-                    currentAiResponseRef.current += newText;
-                    setMessages(prev => {
-                        const updated = [...prev];
-                        // If the last message is from AI, update it
-                        if (updated.length > 0 && updated[updated.length - 1].role === 'ai') {
-                            updated[updated.length - 1] = { 
-                                role: 'ai', 
-                                content: currentAiResponseRef.current 
-                            };
-                        } else {
-                            // Otherwise push a new message
-                            updated.push({ role: 'ai', content: currentAiResponseRef.current });
-                        }
-                        return updated;
-                    });
-                }
+            if (newText) {
+                const isNewTurn = currentAiResponseRef.current === '';
+                currentAiResponseRef.current += newText;
+                
+                setMessages(prev => {
+                    const updated = [...prev];
+                    if (!isNewTurn && updated.length > 0 && updated[updated.length - 1].role === 'ai') {
+                        updated[updated.length - 1] = { 
+                            role: 'ai', 
+                            content: currentAiResponseRef.current 
+                        };
+                    } else {
+                        updated.push({ role: 'ai', content: currentAiResponseRef.current });
+                    }
+                    return updated;
+                });
+            }
             
             if (msg.serverContent && msg.serverContent.turnComplete) {
-                // The AI finished its turn, reset the active buffer
+                // If there's no text at all, we don't need to force a chat bubble for audio.
+                // The VoiceOrb animation is enough for the user to know the AI responded.
+                window.audioChunksReceived = 0;
                 currentAiResponseRef.current = '';
             }
+
         } catch (err) {
             console.error('Error parsing WS message:', err);
+            setError(`CRASH in WS handler: ${err.message || err}`);
         }
     }, []);
 
     const startConversation = async () => {
-        setError(null);
-        await connectMicrophone();
+        try {
+            setError(null);
+            await connectMicrophone();
 
-        let rawKey = localStorage.getItem('geminiApiKey') || '';
-        const API_KEY = rawKey.replace(/['"]/g, '').trim();
-        
-        if (!API_KEY) {
-            setError("Google Gemini API Key is missing. Please save it in settings.");
-            return;
-        }
+            let rawKey = localStorage.getItem('geminiApiKey') || '';
+            const API_KEY = rawKey.replace(/['"]/g, '').trim();
+            
+            if (!API_KEY) {
+                setError("Google Gemini API Key is missing. Please save it in settings.");
+                return;
+            }
 
-        const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${API_KEY}`;
-        const ws = new WebSocket(wsUrl);
-        wsRef.current = ws;
+            const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${API_KEY}`;
+            const ws = new WebSocket(wsUrl);
+            wsRef.current = ws;
 
-        ws.onopen = () => {
-            setIsConnected(true);
-            ws.send(JSON.stringify({
-                setup: {
-                    model: 'models/gemini-3.1-flash-live-preview',
-                    generationConfig: {
-                        responseModalities: ["AUDIO"]
-                    },
-                    outputAudioTranscription: {},
-                    inputAudioTranscription: {}
+            ws.onopen = () => {
+                setIsConnected(true);
+                ws.send(JSON.stringify({
+                    setup: {
+                        model: 'models/gemini-3.1-flash-live-preview',
+                        generationConfig: {
+                            responseModalities: ["AUDIO"],
+                            speechConfig: {
+                                voiceConfig: {
+                                    prebuiltVoiceConfig: {
+                                        voiceName: "Aoede"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }));
+                
+                // Prompt the AI to introduce itself instantly so the user hears voice
+                setTimeout(() => {
+                    if (ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            clientContent: {
+                                turns: [
+                                    {
+                                        role: 'user',
+                                        parts: [{ text: "Hello! Please briefly introduce yourself as Emma, and ask how you can help." }]
+                                    }
+                                ],
+                                turnComplete: true
+                            }
+                        }));
+                    }
+                }, 500);
+            };
+
+            ws.onmessage = handleWebSocketMessage;
+
+            ws.onerror = (e) => {
+                console.error('WebSocket Error:', e);
+                setError('WebSocket Connection Error. Check console or API key.');
+                stopConversation();
+            };
+
+            ws.onclose = (e) => {
+                console.log(`WebSocket closed: ${e.code} - ${e.reason}`);
+                if (e.code !== 1000 && e.code !== 1005) {
+                    setError(`API Disconnected (${e.code}): ${e.reason || 'Invalid API Key or Model'}`);
                 }
-            }));
-        };
-
-        ws.onmessage = handleWebSocketMessage;
-
-        ws.onerror = (e) => {
-            console.error('WebSocket Error:', e);
-            setError('WebSocket Connection Error. Check console or API key.');
-            stopConversation();
-        };
-
-        ws.onclose = (e) => {
-            console.log(`WebSocket closed: ${e.code} - ${e.reason}`);
-            setIsConnected(false);
-            stopConversation();
-        };
+                setIsConnected(false);
+                stopConversation();
+            };
+        } catch (err) {
+            console.error("Failed to start voice:", err);
+            setError(`Failed to start voice: ${err.message}`);
+        }
     };
 
     const stopConversation = () => {
@@ -275,6 +319,7 @@ export function useGeminiLive() {
         playQueueRef.current = [];
         isPlayingRef.current = false;
         nextPlayTimeRef.current = 0;
+        activeNodesRef.current = 0;
         currentAiResponseRef.current = '';
     };
 
