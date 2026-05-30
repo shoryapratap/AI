@@ -1,16 +1,1 @@
-$shell = New-Object -ComObject WScript.Shell
-$programsPaths = @("$env:ProgramData\Microsoft\Windows\Start Menu\Programs", "$env:APPDATA\Microsoft\Windows\Start Menu\Programs")
-$shortcuts = Get-ChildItem -Path $programsPaths -Filter *.lnk -Recurse -ErrorAction SilentlyContinue
-$apps = @()
-foreach ($s in $shortcuts) {
-    try {
-        $lnk = $shell.CreateShortcut($s.FullName)
-        if ($lnk.TargetPath -and (Test-Path $lnk.TargetPath) -and ($lnk.TargetPath -match "\.exe$")) {
-            $apps += @{
-                Name = $s.BaseName
-                Path = $lnk.TargetPath
-            }
-        }
-    } catch {}
-}
-$apps | Sort-Object Name -Unique | ConvertTo-Json -Compress
+$apps = @(); $startApps = Get-StartApps; foreach ($app in $startApps) { if (-not ($app.AppID -match '^[a-zA-Z]:\\') -and -not ($app.AppID -match '^(http|microsoft-edge)')) { $apps += @{ Name = $app.Name; Path = $app.AppID; Dir = '' } } }; $apps | ConvertTo-Json

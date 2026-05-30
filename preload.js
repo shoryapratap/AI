@@ -13,5 +13,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     // App Scanner
-    scanApps: () => ipcRenderer.invoke('scan-apps')
+    scanApps: () => ipcRenderer.invoke('scan-apps'),
+    launchApp: (appPath) => ipcRenderer.invoke('launch-app', appPath)
 });

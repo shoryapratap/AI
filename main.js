@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, nativeImage } = require('electron');
 const path = require('path');
 const { scanApps } = require('./control/appScanner');
+const { spawn, exec } = require('child_process');
 
 let mainWindow;
 
@@ -74,6 +75,32 @@ ipcMain.handle('scan-apps', async () => {
         console.error('Error scanning apps via IPC:', err);
         return [];
     }
+});
+
+ipcMain.handle('launch-app', async (event, appPath) => {
+    return new Promise((resolve) => {
+        try {
+            // Check if it's a UWP App (no backslashes)
+            if (!appPath.includes('\\') && !appPath.includes('/')) {
+                console.log(`[Launch] Starting UWP app ${appPath}...`);
+                const child = spawn('explorer.exe', [`shell:AppsFolder\\${appPath}`], { detached: true, stdio: 'ignore' });
+                child.unref();
+                resolve(true);
+                return;
+            }
+
+            const exeName = path.basename(appPath);
+            const appDir = path.dirname(appPath);
+            
+            console.log(`[Launch] Starting ${exeName}...`);
+            const child = spawn(appPath, [], { detached: true, stdio: 'ignore', cwd: appDir });
+            child.unref();
+            resolve(true);
+        } catch (err) {
+            console.error('Error launching app:', err);
+            resolve(false);
+        }
+    });
 });
 
 // App lifecycle

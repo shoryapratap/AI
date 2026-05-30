@@ -118,6 +118,18 @@ const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
 
             if (container) {
                 container.style.filter = 'none';
+                // Auto-recover canvas size if it was lost during visibility changes
+                const currentW = container.clientWidth;
+                const currentH = container.clientHeight;
+                if (currentW > 0 && currentH > 0) {
+                    const canvas = renderer.domElement;
+                    const pixelRatio = renderer.getPixelRatio();
+                    if (canvas.width !== Math.floor(currentW * pixelRatio) || canvas.height !== Math.floor(currentH * pixelRatio)) {
+                        camera.aspect = currentW / currentH;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(currentW, currentH);
+                    }
+                }
             }
 
             // Inner core rotation
