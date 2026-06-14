@@ -1,15 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Globe, Code, Music, Gamepad2, MessageSquare, Monitor, Play } from 'lucide-react';
 import './SystemWidgets.css';
 
 const AppScannerWidget = ({ onClose }) => {
     const [isScanning, setIsScanning] = useState(false);
-    const [scannedApps, setScannedApps] = useState([]);
+    const [scannedApps, setScannedApps] = useState(() => {
+        const saved = localStorage.getItem('appScanner_appsList');
+        if (saved) {
+            try { return JSON.parse(saved); } catch(e) {}
+        }
+        return [];
+    });
     const [isCreatingTab, setIsCreatingTab] = useState(false);
     const [newTabName, setNewTabName] = useState('');
     const [selectedApps, setSelectedApps] = useState([]);
-    const [savedTabs, setSavedTabs] = useState([]);
+    const [savedTabs, setSavedTabs] = useState(() => {
+        const saved = localStorage.getItem('appScannerTabs');
+        if (saved) {
+            try { return JSON.parse(saved); } catch(e) {}
+        }
+        return [];
+    });
     const [editingTabId, setEditingTabId] = useState(null);
+
+    useEffect(() => {
+        if (scannedApps.length === 0) {
+            handleScan(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (scannedApps.length > 0) {
+            localStorage.setItem('appScanner_appsList', JSON.stringify(scannedApps));
+        }
+    }, [scannedApps]);
+
+    useEffect(() => {
+        localStorage.setItem('appScannerTabs', JSON.stringify(savedTabs));
+        if (window.electronAPI && window.electronAPI.saveAppGroups) {
+            window.electronAPI.saveAppGroups(savedTabs);
+        }
+    }, [savedTabs]);
 
     const handleSaveTab = () => {
         if (!newTabName.trim() || selectedApps.length === 0) return;
@@ -65,37 +96,33 @@ const AppScannerWidget = ({ onClose }) => {
         setSelectedApps(prev => prev.filter(app => app.name !== appToRemove.name));
     };
 
-    const handleScan = async () => {
+    const getFallbackIcon = (name) => {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('browser') || lowerName.includes('chrome') || lowerName.includes('edge') || lowerName.includes('brave') || lowerName.includes('firefox')) {
+            return <Globe size={32} color="#3b82f6" />;
+        } else if (lowerName.includes('code') || lowerName.includes('studio') || lowerName.includes('git')) {
+            return <Code size={32} color="#10b981" />;
+        } else if (lowerName.includes('music') || lowerName.includes('spotify') || lowerName.includes('media')) {
+            return <Music size={32} color="#ec4899" />;
+        } else if (lowerName.includes('game') || lowerName.includes('xbox') || lowerName.includes('steam')) {
+            return <Gamepad2 size={32} color="#8b5cf6" />;
+        } else if (lowerName.includes('chat') || lowerName.includes('discord') || lowerName.includes('whatsapp') || lowerName.includes('teams')) {
+            return <MessageSquare size={32} color="#ef4444" />;
+        }
+        return <Monitor size={32} color="#94a3b8" />;
+    };
+
+    const handleScan = async (forceFull = false) => {
         if (isScanning) return;
         setIsScanning(true);
         
         try {
             if (window.electronAPI && window.electronAPI.scanApps) {
-                const apps = await window.electronAPI.scanApps();
-                
-                const appsWithIcons = apps.map(app => {
-                    let fallbackIcon = <Monitor size={32} color="#94a3b8" />;
-
-                    const lowerName = app.name.toLowerCase();
-                    if (lowerName.includes('browser') || lowerName.includes('chrome') || lowerName.includes('edge') || lowerName.includes('brave') || lowerName.includes('firefox')) {
-                        fallbackIcon = <Globe size={32} color="#3b82f6" />;
-                    } else if (lowerName.includes('code') || lowerName.includes('studio') || lowerName.includes('git')) {
-                        fallbackIcon = <Code size={32} color="#10b981" />;
-                    } else if (lowerName.includes('music') || lowerName.includes('spotify') || lowerName.includes('media')) {
-                        fallbackIcon = <Music size={32} color="#ec4899" />;
-                    } else if (lowerName.includes('game') || lowerName.includes('xbox') || lowerName.includes('steam')) {
-                        fallbackIcon = <Gamepad2 size={32} color="#8b5cf6" />;
-                    } else if (lowerName.includes('chat') || lowerName.includes('discord') || lowerName.includes('whatsapp') || lowerName.includes('teams')) {
-                        fallbackIcon = <MessageSquare size={32} color="#ef4444" />;
-                    }
-                    
-                    return { ...app, fallbackIcon };
-                });
-                
-                setScannedApps(appsWithIcons);
+                const apps = await window.electronAPI.scanApps(forceFull);
+                setScannedApps(apps);
             } else {
                 setTimeout(() => {
-                    setScannedApps([{ id: 1, name: 'Browser', fallbackIcon: <Globe size={32} color="#3b82f6" /> }]);
+                    setScannedApps([{ id: 1, name: 'Browser' }]);
                 }, 1000);
             }
         } catch (error) {
@@ -136,7 +163,7 @@ const AppScannerWidget = ({ onClose }) => {
                     
                     {/* Inner Div (App Grid) */}
                     <div className="custom-scroll" style={{ flex: 1, border: '1px dashed rgba(255, 255, 255, 0.2)', borderRadius: '8px', marginBottom: '15px', display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '15px', minHeight: 0 }}>
-                        {isScanning ? (
+                        {isScanning && scannedApps.length === 0 ? (
                             <div style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                                 <span style={{ color: '#94a3b8' }}>Scanning system...</span>
                             </div>
@@ -162,7 +189,7 @@ const AppScannerWidget = ({ onClose }) => {
                                                 {app.iconBase64 ? (
                                                     <img src={app.iconBase64} alt={app.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                                                 ) : (
-                                                    app.fallbackIcon
+                                                    getFallbackIcon(app.name)
                                                 )}
                                             </div>
                                             <span style={{ fontSize: '11px', color: '#cbd5e1', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }} title={app.name}>
@@ -179,7 +206,7 @@ const AppScannerWidget = ({ onClose }) => {
                         )}
                     </div>
 
-                    <button onClick={handleScan} disabled={isScanning} style={{ padding: '10px 15px', backgroundColor: isScanning ? '#1e293b' : '#3b82f6', color: isScanning ? '#94a3b8' : 'white', border: 'none', borderRadius: '6px', cursor: isScanning ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                    <button onClick={() => handleScan(true)} disabled={isScanning} style={{ padding: '10px 15px', backgroundColor: isScanning ? '#1e293b' : '#3b82f6', color: isScanning ? '#94a3b8' : 'white', border: 'none', borderRadius: '6px', cursor: isScanning ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
                         {isScanning ? 'Scanning...' : 'Scan'}
                     </button>
                 </div>
@@ -213,7 +240,7 @@ const AppScannerWidget = ({ onClose }) => {
                                                 {app.iconBase64 ? (
                                                     <img src={app.iconBase64} alt={app.name} style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
                                                 ) : (
-                                                    app.fallbackIcon
+                                                    <div style={{ transform: 'scale(1.1)', display: 'flex' }}>{getFallbackIcon(app.name)}</div>
                                                 )}
                                                 <span style={{ fontSize: '11px', color: '#cbd5e1', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
                                                     {app.name}
@@ -280,7 +307,7 @@ const AppScannerWidget = ({ onClose }) => {
                                                                 {app.iconBase64 ? (
                                                                     <img src={app.iconBase64} style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
                                                                 ) : (
-                                                                    <div style={{ transform: 'scale(0.5)', display: 'flex' }}>{app.fallbackIcon}</div>
+                                                                    <div style={{ transform: 'scale(0.5)', display: 'flex' }}>{getFallbackIcon(app.name)}</div>
                                                                 )}
                                                             </div>
                                                         ))}

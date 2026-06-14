@@ -1,0 +1,51 @@
+{
+  "profile": {
+    "name": "",
+    "age": null,
+    "phone_number": "",
+    "email": "",
+    "location": "",
+    "work_location": "",
+    "work_title": "",
+    "hobbies": [],
+    "personality_type": ""
+  },
+  "relationships": {
+    "spouse_partner": "",
+    "children": [],
+    "close_friends": [],
+    "key_colleagues": []
+  },
+  "routines": {
+    "wake_up_time": "",
+    "sleep_time": "",
+    "typical_work_hours": "",
+    "workout_schedule": ""
+  },
+  "health_and_diet": {
+    "dietary_restrictions": [],
+    "allergies": [],
+    "health_goals": []
+  },
+  "tech_ecosystem": {
+    "primary_phone": "",
+    "preferred_music_app": "",
+    "default_browser": "",
+    "smart_home_ecosystem": ""
+  },
+  "financial_and_shopping": {
+    "favorite_brands": [],
+    "clothing_sizes": {},
+    "budgeting_style": ""
+  },
+  "preferences": {
+    "theme": "dark",
+    "voice_speed": 1.0,
+    "communication_style": {
+      "likes_emojis": false,
+      "wants_concise_answers": true,
+      "tone": "direct and efficient"
+    }
+  },
+  "facts": []
+}

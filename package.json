@@ -5,14 +5,18 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "react:dev": "npm run dev --prefix frontend-react",
+    "electron:dev": "concurrently \"npm run react:dev\" \"wait-on http://localhost:5173 && electron .\"",
     "build": "electron-builder --win --x64"
   },
   "author": "Emma AI",
   "license": "MIT",
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "electron": "^31.0.0",
     "electron-builder": "^24.13.3",
-    "png-to-ico": "^3.0.1"
+    "png-to-ico": "^3.0.1",
+    "wait-on": "^9.0.10"
   },
   "build": {
     "appId": "com.emma.ai",

@@ -1,0 +1,113 @@
+[
+  {
+    "id": 1781411275054,
+    "name": "coding",
+    "apps": [
+      {
+        "id": 68,
+        "name": "Antigravity IDE",
+        "path": "C:\\Users\\shory\\AppData\\Local\\Programs\\Antigravity IDE\\Antigravity IDE.exe",
+        "iconBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAACNElEQVRYhe2Xz4pTMRTGv1y77MLZCoOPoXthQERw2ccYpOJ0QDqD4GYsMm/RJ3GjPopYxm57PhfJTU4yqbdJZ3q7uB+l+XNb8uv5ck5SYNCgQf+VuZi+n7Mx540xT/uGScWNXDXmSXPVN9ybt++yLRtzbmYfp+wTrksjALj+/KVvjqzmny7R9A3RpaMHHKUTy+US6/Xaj8fjMSaTiR8vft5h8esvQLt1Sag+fR+gfZEw7tn0xQk+vDzZea0sYPqBVF9/3AFwiwoBUDHRt7brIF178/13BNi1VhawUyK28dEyACXw2TfAswZoVNSLYou9jfds3QZFO50BfBSLuZGwuLPXtDZTEZB+/4FhXLJWFrBTlBAJ6j1m7aZ6Tg3FuvOg3GJhkgxtHwDEZ274AQyPD2ExRGIoBxZlsipBkf2mcK0ai0MEt++7ECk6Xl2WylRhsUQWOw4XVZXJICAq03V27wO4m8UWzhj4iIVSksAwnCisKIQVFidZKjpJkppHgJCQIQcp1DqLHaRRx1m0P6O5ukpTYTFD3WsLMFLAMB9OkAeKYJco6iTREAomFO72O3ob7Am4UxYjjowthdvOY7Rpfrgs9gDRlSq5ybTwD32b6RJVpHKlxSBfYvz4sQHDaaEiqCLKXJLsoeL/JBevnoEirtzYlhuxe5DiaqMk13+ry9fPiwGLIzg7O8Xs7LR4oVod/b+6Riir1epP3xz31DKNCNx+W9zM+wZKJZQVgdu+OQYNOnr9AzRdNGlqGBzVAAAAAElFTkSuQmCC",
+        "group": null,
+        "fallbackIcon": {
+          "type": {},
+          "key": null,
+          "props": {
+            "size": 32,
+            "color": "#94a3b8"
+          },
+          "_owner": null,
+          "_store": {}
+        }
+      },
+      {
+        "id": 4,
+        "name": "Google Chrome",
+        "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "iconBase64": "data:image/png;base64,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",
+        "group": null,
+        "fallbackIcon": {
+          "type": {},
+          "key": null,
+          "props": {
+            "size": 32,
+            "color": "#3b82f6"
+          },
+          "_owner": null,
+          "_store": {}
+        }
+      },
+      {
+        "id": 102,
+        "name": "File Explorer",
+        "path": "C:\\Windows\\explorer.exe",
+        "iconBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAADNklEQVRYheWXPY8URxCGn56bYzmd4RCLdRaOzJ3JkE8iB8mZnWDLduIf4MRycH/DiQkcOUEycgYSl0FiQQY/gQCBwZIlcHAfe+ztzlSVg+7Z7pnZz/NFMFJruna6q95636qeWXjfL/f8N7bIeegca7MWm/GIPb76ZJvdkwKQzRscwDmus8bD579w7sQAzBs8AfEZa9w8KQDuxS3M7IScucnPzAADI9z92MlLAVHQOUGsdi+xfvlzTq2cBwRQ0MadMs5NwNSvtXQoh7v/3Mjf7MNBH1QDygnXhxc32LxyjbXuRyD7ULwBK306qHdAlaaG4Bp2V84DmEDH6tku7t8nP1r34qdhceqsgRqF8i0Ur0GLuLbituK1+XvtubbW5t31j6H/rO1Aq7lE9HrUcKxjgswJLPyeM3gJOojoxjlbKIgt5CtHjham7TiZTpQgLm6gm+VsEcBj9yiGkUe6Jm2cROdxQMRkzXyX5LXqn5O24wH2/i1pUTOdIsEixTYLRAgWA9tonsdD4/9XdAtw0JlAt7d1dBjZXBJM1HkWiErnuuYRhAUGRkfmnEGmdsd4nSuWzRI20AYDDRBmhpqiUulnmE4DFjLDcAFElikZhkOT9XVQdQaCM1VlWCh7vYL93hARje/sMd0RdQ53pyw5+GDFcWYVOrmx5FLmxrVhkuVgKDz9q8fdt1/wx9F3HMiKj63+HWGmmFrLRj1QU2+fzXr8cOEOP23eZ7Vj5Fm7MGMXBAZElb2DIb/3vuF2/9uQdHBeBU2C1O06oN2iw89/f09GwfblB2TLQY4ERDaSIACRUjjsF9wbfukdi2IivhZEMFE03L2djuYzxUrh11dfMxiWqPpXu5mAlmBSPweqwisKYb84jam0KZ5gowkrqW3GXtmhLEtUHNnS2BqIEpgqqiGDhGL3+E8Y9Jny2Re//5Y79De2aoB89s77S1gfcw6EHhUdOcAUvXqtZreLsFGIIjUWUAkNlLRs6yg2Cxp5LSOtjcJrUJ4CmgSQao9LjmJaEuioQCoG0taapvPMLjGpnYTVPINyxyMO1RkYSCu7VeHarnRNukGb3aHxA9fUD6zETHbm+zPwLl//AdA/a22Hj1XjAAAAAElFTkSuQmCC",
+        "group": null,
+        "fallbackIcon": {
+          "type": {},
+          "key": null,
+          "props": {
+            "size": 32,
+            "color": "#94a3b8"
+          },
+          "_owner": null,
+          "_store": {}
+        }
+      },
+      {
+        "id": 39,
+        "name": "pgAdmin 4",
+        "path": "C:\\Program Files\\PostgreSQL\\17\\pgAdmin 4\\runtime\\pgAdmin4.exe",
+        "iconBase64": "data:image/png;base64,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",
+        "group": null,
+        "fallbackIcon": {
+          "type": {},
+          "key": null,
+          "props": {
+            "size": 32,
+            "color": "#94a3b8"
+          },
+          "_owner": null,
+          "_store": {}
+        }
+      },
+      {
+        "id": 75,
+        "name": "Visual Studio Code",
+        "path": "C:\\Users\\shory\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+        "iconBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEPElEQVRYhbWXXUwUVxTH//fOLguzCytLCS0SCkrJNlhbJYHG2BcrD22IaXmwH2piQ9KEGE3oJ4qS7aelaiu1CWls2kZJC1h9MWlKE20qtA+2xEA1NiFpzIqxAXbb3YWd2Z2Ze/ogSws7H8aFm8zLuf85/9899+TOXIYVGMHQ0CbjoeAnisGqJC4RRRN94X3BdjMtWwnzCeEeMgCfO9+DNesfBQBoasrAdGTgz7baHSsGEHzvwu4JFScMwJeJ1TY0LtLoasoQM5GBG/MgywZQGRraF9ZdPUvjtY0NpnpNSRv85u0m17KYdw3tDWtSD0DZkyYhAHDn50mivKwvZ4DAwR/OhnXWYulkEQYALueX5wQQ6Bz6NipYi52GbAAA4J4AVu8/VzLL5f6oYFttlwj7CiwABI5f+zzKWCsAyEJcLlbmnr51oDFiZT4DeSRlsKBj9rsYPHDs6sko0AoigAhJxhpuy94bFUfHnzI1J3kkJVgQNL86i4cTzdbIrnZHncLxyNKgIOablKTvAsd+P5Ixr3jjfMO08I6nBIIZWKvHw+iPctKenDi05aSDFC5OFLMqT5Sx1wqOjm8ujU913VTSZ4lEoVNJ/RKd8TG1bfLDlgi6yevUha5VavJFzSMPp8EeNhMojD8e9pV+D22aQ09bJmKgRCmnN6c+aO7934ocm4TfOtAYKU0ln8gTdN1yr7jEUXI/UFBoOp8Hcb2Mia1T3c29WQ4OPbDoKPYdGR+YBdtui6wqQCwCkLjzDqNBbiTb4h9vj2Z5ExXUnEkk7dJlfQu83WP9c4w/Zwth6MA/M/BrSkfso23dVjIiKqgZtAfIPoimwgRfAJBt+o1LQKAMQghbTgDk1AWLKuB99fw3cwLPAwAKfEBRiZMBvKB+SZ3bEw9tMtuC/JqBhOIIUNQ+GFDIc0kDq1s0W+ADiu5zhHAzuubXjd0zBzf+tgTAs7Y/odq9yxfMidVldWlyFoj+BRiGsDtNNIG6GcYv+A9feTnLwekkVEXeaU2gziq5K5382a+nmyAobpsMrCgm+Gf57459XRT6JbBg73AUcgH4rbLKZLyv9zyzORZqvOgXxhYOTDolVEEvJN3yT/63R+sd9w4Al4jGTLzjXjKakidaOjPCWFf9qEjE17sIV53KqgusizF+cdXhsZecvgUMADx7z32aIrYHAFyMRnRd2YbeHX+bIncMF3Nv4SUBrLubFVZXVdvO39tPacdwsUv2ndKBZmeANSsAMD/coSunNYaduQDwXAC00IZdkhB9dpvs0C65AQCA8Vb9LreBVkcns2ZVtXDOAACgvbPxC0lYQZhXRk/r+lwsvnNZr2ZS5+izBqMvwZg/E6uqXrtIo2u6riSTpyLtla1YicspDv26AYL9CMb8Lpcbqysr7xindV1V/jPOjOUHAIDXLz9WWvHAcYAHucRJT6e/irzy4H4z6b9MMp3Fl3fXugAAAABJRU5ErkJggg==",
+        "group": null,
+        "fallbackIcon": {
+          "type": {},
+          "key": null,
+          "props": {
+            "size": 32,
+            "color": "#10b981"
+          },
+          "_owner": null,
+          "_store": {}
+        }
+      }
+    ]
+  },
+  {
+    "id": 1781414839249,
+    "name": "browsers",
+    "apps": [
+      {
+        "id": 58,
+        "name": "Brave",
+        "path": "C:\\Users\\shory\\AppData\\Local\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+        "iconBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAFSUlEQVRYhaWXa2wUVRTHf3cfpaU2WsvDBiotUgQKLS9RE4xAyqOhLWBYrAYlfhAwEJBKIiQSoxUNMdqKIegXsRIIWkBApRgQrIgKxUAEmwJ9IG8FxArtLt2dOX6Y2Z2dzm5b4SSzc+85597//55z59y7im6KTElbwq3kCkRXiICmgQiIbm/rAsHAV+pUe3F35nV1C7ygVxH+nuUolKEQUApn2/xxeQplsPf9uyYgIkoK++TRlrQdcbtAgcnBkg59AZRLgftlGeRdFJ4nHobDIL7ELAJJXxJKHkGgh0LpQki50HUzxLqxal2z2pppC9sj+pCgRXwvIzyvzvFdXAJSQiY6PyBkRAJ0Kw1aU+yguplv0SwCumbpwyQ0DbSgoTeiE0AoVufY6yAgPnoDh4EsW0h6Z0LBa3DiMDTUw7VrkJ4O0+fCtLng9UJNNWxcD6dPQlIyZGXDqMfhp/1wcI+ZFjM9gh/FJHWWX+wEikmhB5eAeyLg3kQoOwQDR8dLYefScgMKx8CFZnvMXYxXjRwiehOqXdxEsdM2wQsf3Dk4wL2psH4reBMscJ3mMDiAp8OQvEhrbDHkzwctBN+UQ8MRuN0GaRmQmw8jCyAx2fDVNDhcAzV7oLEeXG7IHAQLX4Xho6H0TVizwkiBm/7SjzR1kes2ZPExQnyI+BB5LkXkxhWJiKaJHP9WpLxE5JkEw+cdn2WvLBfJxHhKJops3yjS1mofXzhGJMv0eZAFsSIwPtLKnQz39bUsLhfkTTGelr+gogR6Z1j2BzIgPQM27IaHhztT4XLBjGfh5K9G38144GNshUg3diUApw7B35fi5LUP5EyAgaMs3dBRMGhobHCAYBD27rD60VhhEUHJHK5G0rAsR+Tfa+KQ236RhRkizb9ZOl0Xybtf5Eyd0z8UEnlptpUiIw1DIsEJN5RCgAMRRhd+h9XTwH/TzrR6Ldy4DP2HWDqlIGuwsdE6rIqV86F6q+kH6FxUZ6l3EDAGsM/WbzoKa4qgPWDpmo+B2wNnaiHYboA01IG/FeqO2wmUlULVJ1a1MQqSrRTbCQTtRgDqauDTpVZ/cSUULYcVE6AgGZ7oCcU5kD0MdtZaftsqYUOFBRyOgLIv0kZA7aAR4Q8HiXa/1fYkQEkZrD0G/bIhIRHW7YIPt0CvPpZfIGpM9IkT6iwCOBkCMO4ph4oBOeBbBhNmwsQip31q1JhwBHTq1Xlsn1csAs40eBKcACcPwkfL4etK2LzOaU+IGqMiZ4BjcU4CbvY7dJ+vMsowZjq2vQWr8sHfBok9YfVieGUeXL1ijSkrtdoSeRyLi3lTkTmcQLBXlYFjIPsx+LnKqPWTl8CUF43zYM8X8NF70HQapvvgZgvs22UhGOA6qaSp4/zTNQEfFcBSh8GbCE+XwbRFkJDUYZAY33tZKVy5YAFb71rVzLiOU8a+E3asB9GSnu0ExyxGDw01agRRGy/81mLsrbgEkjiAcNuhDwbg3VmwaYVxBEfLjk0w81G4eDaKVJTdTXW3CaiNtKLYFpMcAjvXwOtToeU6hELw9hJYNhcCbQ5XE6WRefwYEys2CMgsBuPmKIqUmA5+IHkAJPaF2iPQFsMnnH8Xs1VT7AXFJYCxGSeh2IqQGpPALaDVfPtjTYCGh1LVyNp4GJ3+MVFV7MfDWJR1h4uavPNlKM7hJb8z8C4JAKjNNCE8CawE2rvyN6USRa5q4Psu5+/mhGDeG4HPgJG2FLRi7AHFn4RYoM53uF13It36cxphW8UJUhmH4g0UQTs7ttBOzv8BvyuRYnJlErvlEWplGDPudJ7/AIrMebg03wY0AAAAAElFTkSuQmCC",
+        "group": null
+      },
+      {
+        "id": 4,
+        "name": "Google Chrome",
+        "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "iconBase64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAHLUlEQVRYhZ1XXYyUVxl+njMzu7OFZQdogd2FMCulXaKNQ0CNpoEd2kTwL7tpoib2T2tiW0OgNyZeAVeY1FhMNAY0VrzQS6k3XhTDNEok1ZZFTPkxcb6tLFCL2Vm2MPsz5328OOf7doZFRXdz8u2cPXPe533e5/35iHv8OTtSKQ0Co3KFnRAqjlYWXUkSKDXgMC4pMWPtOvxrW2vjjXu5l//tQH13pdwzn9vvhGdElijJABIEZAIAkUvukelns7RDQ7Xx5P8CcHakUhp0+QMC9sNM0OJpkYRJgCA6UibQETKJjoDiQQDeDvb/fvzQ/wSgPlIpF+FOkSxDwR2RJBivVqe3ihcRgDfJkQBBMynsT8zNozp0ZikbSwBceXTrR3M5nABZXoLMUsqD1yJJk0QSd7KgCDKNjiyZX+ASEB0A6iOVclE8JaAc/tXmqUkgmcaCZpJzzChI2WijhVJkIITFDIm3uerQmYsZiAzA2ZFKaa1wFoaNaWyzQxZolaJDCoDkyAyI2kUS2VHKjgBFB8Tkn13cmmaJS42s9nZAQtkACmQQniAJRhI+fjZBZhJBmQVBei8h2DAZDCAkCKDC1yAEByC/cVXTH+hgoPLqaPkbf5qqf2F8KiAmAe+FSLEyFhy7K9vRs6OK4qNV5PsHgsO3LwO3LsMmjwHzV1NZkpCkSAtTPTpKQq5pQ6yOJ3kAcEV34BfbS6hevMllsz4YY6RXApwjelew9LUXsPyLXwEAXGsIly8tACAG+h7E5nUPIffA56Drv4RNHqVaN6ODloKBjBRbgshWj+0D8BIrr4yW3BpOAcDn/zyN5353IwIOapYE19uLNT/4Kbo2P4y3kxaO1ebw9kRrUXEE+vscXtpdxMhwAbp9CfbO1wE/g0zMqUSkwIZxOjfnhnLrnh7+soRRALi4thufqN9C6VYLUTECydIL+3Hfjl04VpvDoRNNXGvYouSj7mZmhdf/sgCC2LZ5LcguqHEagKWqbc8Tgr7ba+GSk9dOSPDyEkw/+dQqSALMSzLk1g2g90tPonZxAcdONaPQgjiF+BSy/aOnmngraYH9T4IrKoIMkgdkQPY0QKAruJ0ORDmwQsLA8wM9OD9QhEgayL7nngcAfPc3TZhCRKXgj6VPqGP/6KnZEJlVj0OwWD/T5QUYCC96VZy8KpJFTwQzw/erD+CDLgeYqeuhYVy65jE5ZR3XxE6QfS/7lfDHegtXGwau3EWiJaRLLUEiZAiJvLDRSVaK+StFN97rzeG1j6wAJHRtHsbVxiLAzgUIaZ1JQYWieem6B7oHAYEyESbGrEDchGAl1x5DATCaJODXj6zATDEX64Ai1Z0rNab2/bQRphkiA+mVUq9UC4g6ANAweaVewUBJmOmGjn1ylVrXJjG8Ln9XBuyOZ/v+QMlBt94JCrHouXzUg48h8VPOm9VhIKytbJqBIn87vAxnLp/GwEqH7UOFttj/5zVQymG4PxcBeJEtKcZ+MRtAwZ9zHnZuMYaCLORry7xg4I8/eAsA8OKuYqZyKVDfkRVa3P/WZ3sC++9+DzJRJhIhrSUf6oAM9JY4t8A3JMHCFYttP9L55tVz+Pn5E/jYUAEvPlYMFKNNN+2hgPDNXffhsS1dmL7yqtR8F6QX6QMDqVKCAGFiLbf88fVJoeCel9iTMhFLFY1BYuP/uIAd67fzMx9ei+H+PM793ePmbOdU9PEPFXD4ieUY29aNyanLyP91H7vVTNOEpCmU11g9BBamml8lADz8o08fAbWvrbTDKFFMs0Arupdj77an+MwjYwCAC1c9JhseALClP4/BlaGzHz//K1jyMp7uq0NtAw2RjQRBhMbj+er7AcDwK7vLVvT1O8p7x+SXlpsNvf3cu+0pbLl/E7bcvwkAcGXmPZysn8bJ+h9w5cabOPnghTar8SYSRJjfACDfbA1xTyPJpp5NP9x1xNHtywzGJmqBOhBkVnrkKJoot2SmPLw+0WjfFBetmwhHxVgIpKMdzO1sHEL7ROTft4MelniFQpRlhA91QSF0pEiDCRaaZfvavmxaY303QqrBZ00nxDyUK8onqfEOAMnBWsOmrQpoIo6ScfRPFR6GkzCphX0LA1hWxL4zMBFyHS2lFZAwQC0RLUGayM2y2s6Ya/+QfLuW2E1VzfskNeKjAVpb0TdQCA6lzW6sdAOD+WaIlsCs4KAlCfTCRG52vso9jeTfAkhB6Daq5i3JhlkDPUw+cAKTycsrZWCgMIu9ayZDk2nrFmEyBwmf3J5bqHLP7JIXkyUAUhDJ/tqQWjpEi+O4kbT4Fqbwd8rKs6uvYzB/OxhvCwFgkLcjuemurSvvYhz38nJaPjxS9kUdcMCzoiQTHIOqQWhDYZ614fF4OhZTp4Ysd/zWjI6sHLu74XsGkAE5OFJa6J0fdcyNOLqNkioASi9v+BueWH19ip4TIseN/o3Czd4THGvc0+v5vwA026IQG9k1pgAAAABJRU5ErkJggg==",
+        "group": null
+      }
+    ]
+  }
+]

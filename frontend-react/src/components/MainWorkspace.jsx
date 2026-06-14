@@ -6,6 +6,7 @@ import VoiceOrb from './VoiceOrb';
 import DateTimeWidget from './DateTimeWidget';
 import SystemStatusWidget from './SystemStatusWidget';
 import PlaceholderWidget from './PlaceholderWidget';
+
 import FloatingActionSidebar from './FloatingActionSidebar';
 import AppScannerWidget from './AppScannerWidget';
 import { Map, Camera, MonitorPlay } from 'lucide-react';
@@ -17,6 +18,13 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
     const [isAppScannerOpen, setIsAppScannerOpen] = useState(false);
     const [isAiTalking, setIsAiTalking] = useState(false);
     const [isUserTalking, setIsUserTalking] = useState(false);
+    const [systemPrompt, setSystemPrompt] = useState('');
+
+    React.useEffect(() => {
+        if (window.electronAPI && window.electronAPI.getSystemPrompt) {
+            window.electronAPI.getSystemPrompt().then(setSystemPrompt);
+        }
+    }, []);
 
     const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage } = useGeminiLive();
 
@@ -37,29 +45,44 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
         try {
             const rawKey = localStorage.getItem('geminiApiKey') || '';
             const API_KEY = rawKey.replace(/['"]/g, '').trim();
-            
+
             if (!API_KEY) {
                 setMessages(prev => [...prev, { role: 'ai', content: 'Error: Gemini API Key is missing. Please add it in settings.' }]);
                 setIsAiTalking(false);
                 return;
             }
 
+            const payload = {
+                contents: [{ parts: [{ text: content }] }]
+            };
+            if (systemPrompt) {
+                payload.systemInstruction = { parts: [{ text: systemPrompt }] };
+            }
+
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: content }] }]
-                })
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
                 throw new Error(`API Error: ${res.status} ${res.statusText}`);
             }
-            
+
             const data = await res.json();
             const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
-            
-            setMessages(prev => [...prev, { role: 'ai', content: aiResponse }]);
+
+            let displayResponse = aiResponse;
+            if (window.electronAPI) {
+                if (window.electronAPI.handleAITask) {
+                    window.electronAPI.handleAITask(aiResponse);
+                }
+                if (window.electronAPI.cleanAIText) {
+                    displayResponse = await window.electronAPI.cleanAIText(aiResponse);
+                }
+            }
+
+            setMessages(prev => [...prev, { role: 'ai', content: displayResponse }]);
         } catch (err) {
             setMessages(prev => [...prev, { role: 'ai', content: `Error connecting to Gemini: ${err.message}` }]);
         } finally {
@@ -76,20 +99,22 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
             {/* Central Widgets - Fades out when map or app scanner is open */}
             <div className={`widget-fade ${isMapOpen || isAppScannerOpen ? 'hidden' : ''}`}>
                 {/* Central Placeholder Window */}
-                <PlaceholderWidget title="Main Center Hub" className="placeholder-center" />
+                <PlaceholderWidget title="Main Center Hub" className="placeholder-center">
+                </PlaceholderWidget>
                 <DateTimeWidget />
+
                 <VoiceOrb isUserTalking={displayUserTalking} isAiTalking={displayAiTalking} />
                 <SystemStatusWidget />
             </div>
 
             {/* Floating Action Sidebar - Fades out when map or app scanner is open */}
             <div className={`widget-fade ${isMapOpen || isAppScannerOpen ? 'hidden' : ''}`}>
-                <FloatingActionSidebar 
-                    isMapOpen={isMapOpen} 
+                <FloatingActionSidebar
+                    isMapOpen={isMapOpen}
                     onToggleMap={() => {
                         setIsMapOpen(!isMapOpen);
                         setIsAppScannerOpen(false);
-                    }} 
+                    }}
                     isAppScannerOpen={isAppScannerOpen}
                     onToggleAppScanner={() => {
                         setIsAppScannerOpen(!isAppScannerOpen);
@@ -103,11 +128,11 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
             </div>
 
             <MessageWindow messages={messages} />
-            
+
             <div className="conversational-hub" style={{ marginTop: 'auto', marginBottom: '40px' }}>
-                <InputCapsule 
-                    activeModel={activeModel} 
-                    setActiveModel={setActiveModel} 
+                <InputCapsule
+                    activeModel={activeModel}
+                    setActiveModel={setActiveModel}
                     onSendMessage={handleSendMessage}
                     onMicStateChange={(isListening) => setIsUserTalking(isListening)}
                     isVoiceConnected={isConnected}

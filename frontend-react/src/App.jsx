@@ -14,22 +14,23 @@ function App() {
   const [cubeClass, setCubeClass] = useState('')
   const [isBreathing, setIsBreathing] = useState(false)
 
-  // Handle View Transitions (Safe 2D Fade)
+  // Handle View Transitions (3D Cube Rotation)
   const handleViewChange = (newView) => {
     if (isTransitioning || newView === activeView) return;
     
     setIsTransitioning(true);
-    setCubeClass('fade-out');
+    setIsBreathing(true);
+    setCubeClass(`transitioning ${newView === 'settings' ? 'to-settings' : 'to-workspace'}`);
     
+    // Switch the active view halfway through the transition so it renders the correct DOM state
+    // But since the CSS handles the faces, we just keep both mounted and the CSS handles visibility
+    setActiveView(newView);
+
     setTimeout(() => {
-      setActiveView(newView);
-      setCubeClass('fade-in');
-      
-      setTimeout(() => {
-        setCubeClass('');
-        setIsTransitioning(false);
-      }, 300);
-    }, 300);
+      setIsBreathing(false);
+      setCubeClass(newView === 'settings' ? 'to-settings' : 'to-workspace');
+      setIsTransitioning(false);
+    }, 1600);
   };
 
   // Handle Dynamic Glow Updates

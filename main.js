@@ -1,8 +1,13 @@
 const { app, BrowserWindow, ipcMain, nativeImage } = require('electron');
 const path = require('path');
-const { scanApps } = require('./control/appScanner');
+const { scanApps, launchAppByPath } = require('./control/appScanner');
+const { handleAIOutput, cleanAIOutput } = require('./core/taskManager');
 const { spawn, exec } = require('child_process');
+const fs = require('fs');
 
+// Suppress SSL handshake errors caused by strict certificate checking on external CDN requests
+app.commandLine.appendSwitch('ignore-certificate-errors');
+app.commandLine.appendSwitch('allow-insecure-localhost');
 let mainWindow;
 
 function createWindow() {
@@ -29,8 +34,13 @@ function createWindow() {
         }
     });
 
-    // Load the frontend (React build)
-    mainWindow.loadFile(path.join(__dirname, 'frontend-react', 'dist', 'index.html'));
+    // Load the frontend (React build or Vite dev server)
+    const isDev = !app.isPackaged;
+    if (isDev) {
+        mainWindow.loadURL('http://localhost:5173');
+    } else {
+        mainWindow.loadFile(path.join(__dirname, 'frontend-react', 'dist', 'index.html'));
+    }
 
     // Show window gracefully after paint
     mainWindow.once('ready-to-show', () => {
@@ -39,6 +49,11 @@ function createWindow() {
 
     // Open DevTools in dev mode
     // mainWindow.webContents.openDevTools();
+
+    // Log renderer console messages to terminal
+    mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
+        console.log(`[Renderer] ${message}`);
+    });
 
     mainWindow.on('closed', () => {
         mainWindow = null;
@@ -68,9 +83,9 @@ ipcMain.on('win-close', () => {
     if (mainWindow) mainWindow.close();
 });
 
-ipcMain.handle('scan-apps', async () => {
+ipcMain.handle('scan-apps', async (event, forceFullScan) => {
     try {
-        return await scanApps();
+        return await scanApps(forceFullScan);
     } catch (err) {
         console.error('Error scanning apps via IPC:', err);
         return [];
@@ -78,29 +93,84 @@ ipcMain.handle('scan-apps', async () => {
 });
 
 ipcMain.handle('launch-app', async (event, appPath) => {
-    return new Promise((resolve) => {
-        try {
-            // Check if it's a UWP App (no backslashes)
-            if (!appPath.includes('\\') && !appPath.includes('/')) {
-                console.log(`[Launch] Starting UWP app ${appPath}...`);
-                const child = spawn('explorer.exe', [`shell:AppsFolder\\${appPath}`], { detached: true, stdio: 'ignore' });
-                child.unref();
-                resolve(true);
-                return;
-            }
+    return await launchAppByPath(appPath);
+});
 
-            const exeName = path.basename(appPath);
-            const appDir = path.dirname(appPath);
-            
-            console.log(`[Launch] Starting ${exeName}...`);
-            const child = spawn(appPath, [], { detached: true, stdio: 'ignore', cwd: appDir });
-            child.unref();
-            resolve(true);
-        } catch (err) {
-            console.error('Error launching app:', err);
-            resolve(false);
+ipcMain.handle('save-app-groups', (event, groups) => {
+    const groupsPath = path.join(__dirname, 'memory', 'app_groups.json');
+    try {
+        if (!fs.existsSync(path.dirname(groupsPath))) {
+            fs.mkdirSync(path.dirname(groupsPath), { recursive: true });
         }
-    });
+        fs.writeFileSync(groupsPath, JSON.stringify(groups, null, 2), 'utf8');
+        return true;
+    } catch (e) {
+        console.error('Error saving app groups:', e);
+        return false;
+    }
+});
+
+ipcMain.handle('get-memory', () => {
+    const memPath = path.join(__dirname, 'memory', 'permanent_details.json');
+    try {
+        if (fs.existsSync(memPath)) {
+            return JSON.parse(fs.readFileSync(memPath, 'utf8'));
+        }
+    } catch (e) {
+        console.error('Error reading memory:', e);
+    }
+    return null;
+});
+
+ipcMain.handle('save-memory', (event, data) => {
+    const memPath = path.join(__dirname, 'memory', 'permanent_details.json');
+    try {
+        if (!fs.existsSync(path.dirname(memPath))) {
+            fs.mkdirSync(path.dirname(memPath), { recursive: true });
+        }
+        fs.writeFileSync(memPath, JSON.stringify(data, null, 2), 'utf8');
+        return true;
+    } catch (e) {
+        console.error('Error saving memory:', e);
+        return false;
+    }
+});
+
+ipcMain.handle('get-system-prompt', () => {
+    try {
+        const promptPath = path.join(__dirname, 'core', 'systemPrompt.txt');
+        let promptText = '';
+        if (fs.existsSync(promptPath)) {
+            promptText = fs.readFileSync(promptPath, 'utf8');
+        }
+
+        // Dynamically append available groups so AI knows what groups exist
+        const groupsPath = path.join(__dirname, 'memory', 'app_groups.json');
+        if (fs.existsSync(groupsPath)) {
+            try {
+                const groups = JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
+                if (groups && groups.length > 0) {
+                    const groupNames = groups.map(g => g.name).join(', ');
+                    promptText += `\n\n[SYSTEM INFO]\nThe user currently has the following App Groups saved: ${groupNames}.\nIf the user asks to open any of these, use <COMMAND: LAUNCH_GROUP>GroupName</COMMAND>.`;
+                }
+            } catch (err) {}
+        }
+
+        return promptText;
+    } catch (e) {
+        console.error('Error reading system prompt:', e);
+    }
+    return '';
+});
+
+ipcMain.handle('handle-ai-task', async (event, aiResponse) => {
+    console.log('[main.js] Received AI response for task manager:');
+    console.log(aiResponse);
+    return await handleAIOutput(aiResponse);
+});
+
+ipcMain.handle('clean-ai-text', (event, aiResponse) => {
+    return cleanAIOutput(aiResponse);
 });
 
 // App lifecycle

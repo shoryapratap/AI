@@ -1,0 +1,38 @@
+[
+  {
+    "id": "evt_001",
+    "category": "event",
+    "type": "meeting",
+    "title": "Project Sync",
+    "timestamp": "2026-06-01T14:00:00Z",
+    "duration_minutes": 60,
+    "status": "pending",
+    "notes": "Discuss memory module architecture"
+  },
+  {
+    "id": "rtn_001",
+    "category": "routine",
+    "type": "health",
+    "title": "Take evening medicine",
+    "recurrence": "daily",
+    "time_of_day": "21:00",
+    "status": "active"
+  },
+  {
+    "id": "tsk_001",
+    "category": "task",
+    "title": "Pay electricity bill",
+    "due_date": "2026-06-05T17:00:00Z",
+    "priority": "high",
+    "status": "pending"
+  },
+  {
+    "id": "ann_001",
+    "category": "anniversary",
+    "type": "birthday",
+    "title": "Sarah's Birthday",
+    "date": "08-15",
+    "recurrence": "yearly",
+    "reminder_days_before": 2
+  }
+]

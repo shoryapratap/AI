@@ -30,8 +30,8 @@
     top: 90px; /* Perfectly aligned with the center hub */
     right: 12%;
     width: 250px; /* Reduced width */
-    height: 140px; /* Reduced height */
-    padding: 14px;
+    height: 110px; /* Reduced height to create gap with Orb */
+    padding: 12px;
 }
 
 .date-time-widget:hover {
@@ -43,12 +43,12 @@
     bottom: 150px; /* Perfectly aligned with the bottom of center hub and message window */
     right: 12%;
     width: 250px; /* Reduced width */
-    height: 140px; /* Reduced height */
+    height: 110px; /* Reduced height to create gap with Orb */
     flex-direction: column;
     justify-content: center; /* Center content vertically */
     align-items: flex-start;
-    padding: 14px;
-    gap: 8px; /* Reduced gap */
+    padding: 12px;
+    gap: 6px; /* Reduced gap */
 }
 
 .status-widget:hover {
@@ -58,9 +58,9 @@
 .status-details {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-top: 8px;
-    padding-top: 12px;
+    gap: 4px;
+    margin-top: 4px;
+    padding-top: 8px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%;
 }

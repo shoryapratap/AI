@@ -14,13 +14,13 @@ export function useGeminiLive() {
     const streamRef = useRef(null);
     const sourceRef = useRef(null);
     const processorRef = useRef(null);
-    
+
     // Playback state
     const playQueueRef = useRef([]);
     const isPlayingRef = useRef(false);
     const nextPlayTimeRef = useRef(0);
     const activeNodesRef = useRef(0);
-    
+
     // Keep track of the current streaming AI text
     const currentAiResponseRef = useRef('');
 
@@ -31,10 +31,12 @@ export function useGeminiLive() {
             audioContext.resume().catch(console.error);
             audioContextRef.current = audioContext;
 
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: {
-                channelCount: 1,
-                sampleRate: 16000
-            }});
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    channelCount: 1,
+                    sampleRate: 16000
+                }
+            });
             streamRef.current = stream;
 
             const source = audioContext.createMediaStreamSource(stream);
@@ -45,9 +47,9 @@ export function useGeminiLive() {
 
             processor.onaudioprocess = (e) => {
                 if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-                
+
                 const inputData = e.inputBuffer.getChannelData(0);
-                
+
                 let sum = 0;
                 for (let i = 0; i < inputData.length; i++) {
                     sum += inputData[i] * inputData[i];
@@ -80,7 +82,7 @@ export function useGeminiLive() {
             };
 
             source.connect(processor);
-            
+
             // Connect to a muted GainNode to keep processor running without echo feedback
             const dummyGain = audioContext.createGain();
             dummyGain.gain.value = 0;
@@ -105,8 +107,8 @@ export function useGeminiLive() {
 
         while (playQueueRef.current.length > 0) {
             const chunk = playQueueRef.current.shift();
-            
-            const buffer = audioContextRef.current.createBuffer(1, chunk.length, 24000); 
+
+            const buffer = audioContextRef.current.createBuffer(1, chunk.length, 24000);
             buffer.copyToChannel(chunk, 0);
 
             const source = audioContextRef.current.createBufferSource();
@@ -121,7 +123,7 @@ export function useGeminiLive() {
             source.start(nextPlayTimeRef.current);
             nextPlayTimeRef.current += buffer.duration;
             activeNodesRef.current += 1;
-            
+
             setIsAiTalking(true);
 
             source.onended = () => {
@@ -149,7 +151,7 @@ export function useGeminiLive() {
 
             if (msg.serverContent) {
                 const content = msg.serverContent;
-                
+
                 if (content.modelTurn && content.modelTurn.parts) {
                     for (const part of content.modelTurn.parts) {
                         if (part.text) {
@@ -165,7 +167,7 @@ export function useGeminiLive() {
                                 bytes[i] = binary.charCodeAt(i);
                             }
                             const pcm16 = new Int16Array(bytes.buffer);
-                            
+
                             const float32 = new Float32Array(pcm16.length);
                             for (let i = 0; i < pcm16.length; i++) {
                                 float32[i] = pcm16[i] / 32768.0;
@@ -176,7 +178,7 @@ export function useGeminiLive() {
                         }
                     }
                 }
-                
+
                 if (content.outputTranscription && content.outputTranscription.text) {
                     newText += content.outputTranscription.text;
                 } else if (content.outputTranscription && content.outputTranscription.parts) {
@@ -185,28 +187,38 @@ export function useGeminiLive() {
                     }
                 }
             }
-                
+
             if (newText) {
                 const isNewTurn = currentAiResponseRef.current === '';
                 currentAiResponseRef.current += newText;
-                
+
                 setMessages(prev => {
                     const updated = [...prev];
+                    // Clean streamed text locally to prevent flicker
+                    let displayText = currentAiResponseRef.current
+                        .replace(/<TASK>[\s\S]*?(<\/TASK>|$)/gi, '')
+                        .replace(/<COMMAND:\s*.*?>[\s\S]*?(<\/COMMAND>|$)/gi, '')
+                        .replace(/<MESSAGE>|<\/MESSAGE>/gi, '')
+                        .trim();
+
                     if (!isNewTurn && updated.length > 0 && updated[updated.length - 1].role === 'ai') {
-                        updated[updated.length - 1] = { 
-                            role: 'ai', 
-                            content: currentAiResponseRef.current 
+                        updated[updated.length - 1] = {
+                            role: 'ai',
+                            content: displayText
                         };
                     } else {
-                        updated.push({ role: 'ai', content: currentAiResponseRef.current });
+                        updated.push({ role: 'ai', content: displayText });
                     }
                     return updated;
                 });
             }
-            
+
             if (msg.serverContent && msg.serverContent.turnComplete) {
                 // If there's no text at all, we don't need to force a chat bubble for audio.
                 // The VoiceOrb animation is enough for the user to know the AI responded.
+                if (window.electronAPI && window.electronAPI.handleAITask) {
+                    window.electronAPI.handleAITask(currentAiResponseRef.current);
+                }
                 window.audioChunksReceived = 0;
                 currentAiResponseRef.current = '';
             }
@@ -224,10 +236,15 @@ export function useGeminiLive() {
 
             let rawKey = localStorage.getItem('geminiApiKey') || '';
             const API_KEY = rawKey.replace(/['"]/g, '').trim();
-            
+
             if (!API_KEY) {
                 setError("Google Gemini API Key is missing. Please save it in settings.");
                 return;
+            }
+
+            let systemPromptText = '';
+            if (window.electronAPI && window.electronAPI.getSystemPrompt) {
+                systemPromptText = await window.electronAPI.getSystemPrompt();
             }
 
             const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${API_KEY}`;
@@ -236,7 +253,7 @@ export function useGeminiLive() {
 
             ws.onopen = () => {
                 setIsConnected(true);
-                ws.send(JSON.stringify({
+                const setupPayload = {
                     setup: {
                         model: 'models/gemini-3.1-flash-live-preview',
                         generationConfig: {
@@ -250,8 +267,14 @@ export function useGeminiLive() {
                             }
                         }
                     }
-                }));
-                
+                };
+                if (systemPromptText) {
+                    setupPayload.setup.systemInstruction = {
+                        parts: [{ text: systemPromptText }]
+                    };
+                }
+                ws.send(JSON.stringify(setupPayload));
+
                 // Prompt the AI to introduce itself instantly so the user hears voice
                 setTimeout(() => {
                     if (ws.readyState === WebSocket.OPEN) {
@@ -325,10 +348,10 @@ export function useGeminiLive() {
 
     const sendTextMessage = (text) => {
         if (!text.trim()) return;
-        
+
         // Add user text to UI immediately
         setMessages(prev => [...prev, { role: 'user', content: text }]);
-        
+
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             // Send clientContent turn via WebSocket
             wsRef.current.send(JSON.stringify({
@@ -342,7 +365,7 @@ export function useGeminiLive() {
                     turnComplete: true
                 }
             }));
-            
+
             // Push a placeholder for the AI response to start streaming into
             setMessages(prev => [...prev, { role: 'ai', content: '' }]);
             currentAiResponseRef.current = '';

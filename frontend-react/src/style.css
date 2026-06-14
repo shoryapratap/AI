@@ -225,35 +225,56 @@ body.electron .workspace-container {
     overflow: hidden;
 }
 
-/* 3D CUBIC ROOM WRAPPER (Now 2D Safe Fade) */
+/* 3D CUBIC ROOM WRAPPER */
 .cube-room {
     width: 100%;
     height: 100%;
     position: absolute;
     transform-style: preserve-3d;
+    will-change: transform;
+    transform: translateZ(50vw) rotateY(0deg);
 }
 
-.cube-room.fade-out {
-    animation: pageFlipOut 0.4s ease forwards;
+/* 3D Recess & Rotate Animations */
+.cube-room.to-settings {
+    animation: rotateToSettings 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-@keyframes pageFlipOut {
-    0% { transform: translateZ(0) rotateY(0deg); opacity: 1; }
-    50% { transform: translateZ(-200px) rotateY(-45deg); opacity: 0.5; }
-    100% { transform: translateZ(-500px) rotateY(-90deg); opacity: 0; }
+.cube-room.to-workspace {
+    animation: rotateToWorkspace 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-.cube-room.fade-in {
-    animation: pageFlipIn 0.4s ease forwards;
+@keyframes rotateToSettings {
+    0% {
+        transform: translateZ(50vw) rotateY(0deg);
+    }
+    28% {
+        transform: translateZ(12vw) rotateY(0deg);
+    }
+    72% {
+        transform: translateZ(12vw) rotateY(90deg);
+    }
+    100% {
+        transform: translateZ(50vw) rotateY(90deg);
+    }
 }
 
-@keyframes pageFlipIn {
-    0% { transform: translateZ(-500px) rotateY(90deg); opacity: 0; }
-    50% { transform: translateZ(-200px) rotateY(45deg); opacity: 0.5; }
-    100% { transform: translateZ(0) rotateY(0deg); opacity: 1; }
+@keyframes rotateToWorkspace {
+    0% {
+        transform: translateZ(50vw) rotateY(90deg);
+    }
+    28% {
+        transform: translateZ(12vw) rotateY(90deg);
+    }
+    72% {
+        transform: translateZ(12vw) rotateY(0deg);
+    }
+    100% {
+        transform: translateZ(50vw) rotateY(0deg);
+    }
 }
 
-/* VIEW PANELS */
+/* VIEW PANELS (CUBE FACES) */
 .view-panel {
     position: absolute;
     top: 0;
@@ -263,17 +284,22 @@ body.electron .workspace-container {
     border-radius: 0px;
     background: transparent;
     
-    display: none; /* HARD HIDE WHEN INACTIVE */
+    display: flex;
     flex-direction: column;
     overflow-y: auto;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform, opacity;
     
-    opacity: 0;
+    /* Active transition opacity (NO BLUR for crisp text) */
+    opacity: 0.08;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity 1.2s ease, 
+                transform 0.8s cubic-bezier(0.25, 1, 0.5, 1),
+                border-radius 0.8s ease;
 }
 
 .view-panel.active {
-    display: flex; /* HARD SHOW WHEN ACTIVE */
     opacity: 1;
     pointer-events: auto !important;
     z-index: 100;
@@ -290,16 +316,43 @@ body.electron .workspace-container {
     border-radius: inherit;
     pointer-events: none;
     z-index: -1;
-    opacity: 1;
+    opacity: 0;
+    transition: opacity 0.6s ease, border-color 0.6s ease;
     
-    /* Premium Glass Styles */
-    background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 70%), 
-                rgba(10, 10, 12, 0.35);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    /* Premium Glass Styles (Optimized for 60fps 3D Animation) */
+    background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 70%), 
+                rgba(8, 8, 12, 0.85);
+    /* Removed backdrop-filter to prevent massive GPU lag during 3D rotation */
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 30px 70px rgba(0, 0, 0, 0.75), 
                 inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.cube-room.transitioning .view-panel::before {
+    opacity: 1;
+}
+
+.cube-room.transitioning .view-panel.active::before {
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Face positions in 3D cubic space */
+#main-view {
+    transform: rotateY(0deg) translateZ(-50vw) scale(1);
+}
+
+#settings-view {
+    transform: rotateY(-90deg) translateZ(-50vw) scale(1);
+    background: transparent;
+}
+
+/* Shrink panels to floating glass windows during transition */
+.cube-room.transitioning #main-view {
+    transform: rotateY(0deg) translateZ(-50vw) scale(0.85);
+}
+
+.cube-room.transitioning #settings-view {
+    transform: rotateY(-90deg) translateZ(-50vw) scale(0.85);
 }
 
 /* WORKSPACE VIEW (CONVERSATIONAL HUB) */
@@ -420,8 +473,6 @@ body.electron .workspace-container {
     height: 100%;
     border: none;
     border-radius: 12px;
-    /* Beautiful Dark Mode Filter for OpenStreetMap */
-    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(110%);
     pointer-events: auto;
 }
 
@@ -1094,4 +1145,38 @@ body.electron .hud-navbar {
     inset: 0;
     pointer-events: none;
     z-index: 10;
+}
+
+/* Anime Character Styles */
+.anime-character-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: animeFloat 4s ease-in-out infinite;
+}
+
+.anime-img {
+    max-height: 90%;
+    max-width: 90%;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+    transition: transform 0.3s ease;
+}
+
+.anime-character-container.talking .anime-img,
+.live2d-container.talking canvas {
+    animation: animeBreathe 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 30px rgba(138, 100, 255, 0.4));
+}
+
+@keyframes animeFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+}
+
+@keyframes animeBreathe {
+    0%, 100% { transform: scale(1) translateY(0); }
+    50% { transform: scale(1.02) translateY(-5px); }
 }
