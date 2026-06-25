@@ -761,6 +761,7 @@ body.electron .workspace-container {
 .slider-group input[type="range"] {
     flex: 1;
     -webkit-appearance: none;
+    appearance: none;
     height: 4px;
     border-radius: 2px;
     background: rgba(255,255,255,0.08);
@@ -769,6 +770,7 @@ body.electron .workspace-container {
 
 .slider-group input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
+    appearance: none;
     width: 12px;
     height: 12px;
     border-radius: 50%;

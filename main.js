@@ -8,6 +8,18 @@ const fs = require('fs');
 // Suppress SSL handshake errors caused by strict certificate checking on external CDN requests
 app.commandLine.appendSwitch('ignore-certificate-errors');
 app.commandLine.appendSwitch('allow-insecure-localhost');
+
+// Fix GPU cache access denied error
+app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
+app.commandLine.appendSwitch('disable-gpu-sandbox');
+app.commandLine.appendSwitch('disable-http-cache');
+
+// Suppress Chromium console noise (like SSL handshake errors)
+app.commandLine.appendSwitch('log-level', '3');
+
+// Suppress CSP security warning spam in console
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
+
 let mainWindow;
 
 function createWindow() {
@@ -35,7 +47,7 @@ function createWindow() {
     });
 
     // Load the frontend (React build or Vite dev server)
-    const isDev = !app.isPackaged;
+    const isDev = !app.isPackaged && process.env.NODE_ENV === 'development';
     if (isDev) {
         mainWindow.loadURL('http://localhost:5173');
     } else {
