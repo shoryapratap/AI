@@ -270,9 +270,245 @@ async function launchGroupByName(groupName) {
     }
 }
 
+async function closeAppByPath(appPath, appName) {
+    return new Promise((resolve) => {
+        try {
+            if (appPath.includes('\\') || appPath.includes('/')) {
+                const exeName = path.basename(appPath);
+                console.log(`[Close] Stopping ${exeName}...`);
+                exec(`taskkill /IM "${exeName}" /F`, (err) => {
+                    if (err && appName) {
+                        exec(`powershell.exe -Command "Get-Process | Where-Object {$_.MainWindowTitle -match '${appName}'} | Stop-Process -Force"`, () => resolve(true));
+                    } else {
+                        resolve(true);
+                    }
+                });
+            } else {
+                console.log(`[Close] Stopping UWP app ${appName}...`);
+                exec(`powershell.exe -Command "Get-Process | Where-Object {$_.MainWindowTitle -match '${appName}'} | Stop-Process -Force"`, () => resolve(true));
+            }
+        } catch (err) {
+            console.error('Error closing app:', err);
+            resolve(false);
+        }
+    });
+}
+
+async function closeAppByName(appName) {
+    const cachePath = path.join(__dirname, '..', 'memory', 'scanned_apps_cache.json');
+    try {
+        if (!fs.existsSync(cachePath)) {
+            console.log(`[AI Close] App cache not found.`);
+            return false;
+        }
+        const cachedApps = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+        const searchName = appName.toLowerCase();
+        
+        let targetApp = cachedApps.find(a => a.name.toLowerCase() === searchName);
+        if (!targetApp) {
+            targetApp = cachedApps.find(a => a.name.toLowerCase().includes(searchName));
+        }
+
+        if (targetApp && targetApp.path) {
+            console.log(`[AI Close] Found app "${targetApp.name}" for query "${appName}".`);
+            return await closeAppByPath(targetApp.path, targetApp.name);
+        } else {
+            console.log(`[AI Close] App "${appName}" not found in cache.`);
+            return false;
+        }
+    } catch (e) {
+        console.error('Error in closeAppByName:', e);
+        return false;
+    }
+}
+
+async function closeGroupByName(groupName) {
+    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    try {
+        if (!fs.existsSync(groupsPath)) {
+            return false;
+        }
+        const groups = JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
+        const searchName = groupName.toLowerCase();
+        
+        let targetGroup = groups.find(g => g.name.toLowerCase() === searchName);
+        if (!targetGroup) {
+            targetGroup = groups.find(g => g.name.toLowerCase().includes(searchName));
+        }
+
+        if (targetGroup && targetGroup.apps && targetGroup.apps.length > 0) {
+            const promises = targetGroup.apps.map(app => {
+                if (app.path) return closeAppByPath(app.path, app.name);
+                return Promise.resolve(false);
+            });
+            await Promise.all(promises);
+            return true;
+        }
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
+
+async function _resolveApps(appNamesArray, cachedApps) {
+    const resolvedApps = [];
+    for (const appName of appNamesArray) {
+        const searchName = appName.trim().toLowerCase();
+        if (!searchName) continue;
+
+        let targetApp = cachedApps.find(a => a.name.toLowerCase() === searchName);
+        if (!targetApp) {
+            targetApp = cachedApps.find(a => a.name.toLowerCase().includes(searchName));
+        }
+        if (targetApp && targetApp.path) {
+            resolvedApps.push(targetApp);
+        } else {
+            console.log(`[AI Launch] Warning: Could not find app matching "${appName}" to add to group.`);
+        }
+    }
+    return resolvedApps;
+}
+
+async function createGroupByName(groupName, appNamesArray) {
+    const cachePath = path.join(__dirname, '..', 'memory', 'scanned_apps_cache.json');
+    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    
+    try {
+        if (!fs.existsSync(cachePath)) {
+            console.log(`[AI Launch] App cache not found. Cannot create group.`);
+            return false;
+        }
+        const cachedApps = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+        let groups = fs.existsSync(groupsPath) ? JSON.parse(fs.readFileSync(groupsPath, 'utf8')) : [];
+
+        const resolvedApps = await _resolveApps(appNamesArray, cachedApps);
+
+        // Overwrite if exists
+        groups = groups.filter(g => g.name.toLowerCase() !== groupName.toLowerCase());
+        groups.push({ id: Date.now(), name: groupName, apps: resolvedApps });
+
+        fs.writeFileSync(groupsPath, JSON.stringify(groups, null, 4), 'utf8');
+        console.log(`[AI Launch] Successfully created group "${groupName}" with ${resolvedApps.length} apps.`);
+        return true;
+    } catch (e) {
+        console.error('Error in createGroupByName:', e);
+        return false;
+    }
+}
+
+async function addAppsToGroup(groupName, appNamesArray) {
+    const cachePath = path.join(__dirname, '..', 'memory', 'scanned_apps_cache.json');
+    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    
+    try {
+        if (!fs.existsSync(cachePath)) {
+            console.log(`[AI Launch] App cache not found. Cannot add apps to group.`);
+            return false;
+        }
+        let groups = fs.existsSync(groupsPath) ? JSON.parse(fs.readFileSync(groupsPath, 'utf8')) : [];
+        const cachedApps = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+
+        let targetGroup = groups.find(g => g.name.toLowerCase() === groupName.toLowerCase());
+        if (!targetGroup) {
+            // Group doesn't exist, create it
+            console.log(`[AI Launch] Group "${groupName}" not found. Creating it instead.`);
+            targetGroup = { id: Date.now(), name: groupName, apps: [] };
+            groups.push(targetGroup);
+        }
+
+        const resolvedApps = await _resolveApps(appNamesArray, cachedApps);
+        
+        // Append new apps without duplicating existing ones
+        for (const app of resolvedApps) {
+            if (!targetGroup.apps.find(a => a.path.toLowerCase() === app.path.toLowerCase())) {
+                targetGroup.apps.push(app);
+            }
+        }
+
+        fs.writeFileSync(groupsPath, JSON.stringify(groups, null, 4), 'utf8');
+        console.log(`[AI Launch] Successfully added apps to group "${targetGroup.name}". Now contains ${targetGroup.apps.length} apps.`);
+        return true;
+    } catch (e) {
+        console.error('Error in addAppsToGroup:', e);
+        return false;
+    }
+}
+
+async function removeAppsFromGroup(groupName, appNamesArray) {
+    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    
+    try {
+        if (!fs.existsSync(groupsPath)) {
+            console.log(`[AI Launch] Groups file not found. Cannot remove apps.`);
+            return false;
+        }
+        let groups = JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
+
+        let targetGroup = groups.find(g => g.name.toLowerCase() === groupName.toLowerCase());
+        if (!targetGroup) {
+            console.log(`[AI Launch] Group "${groupName}" not found.`);
+            return false;
+        }
+
+        const originalCount = targetGroup.apps.length;
+
+        for (const appName of appNamesArray) {
+            const searchName = appName.trim().toLowerCase();
+            if (!searchName) continue;
+
+            targetGroup.apps = targetGroup.apps.filter(a => 
+                a.name.toLowerCase() !== searchName && 
+                !a.name.toLowerCase().includes(searchName)
+            );
+        }
+
+        fs.writeFileSync(groupsPath, JSON.stringify(groups, null, 4), 'utf8');
+        console.log(`[AI Launch] Removed ${originalCount - targetGroup.apps.length} apps from group "${targetGroup.name}".`);
+        return true;
+    } catch (e) {
+        console.error('Error in removeAppsFromGroup:', e);
+        return false;
+    }
+}
+
+async function removeGroupByName(groupName) {
+    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    
+    try {
+        if (!fs.existsSync(groupsPath)) {
+            console.log(`[AI Launch] Groups file not found. Cannot remove group.`);
+            return false;
+        }
+        let groups = JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
+        const searchName = groupName.trim().toLowerCase();
+
+        const initialLength = groups.length;
+        groups = groups.filter(g => g.name.toLowerCase() !== searchName);
+
+        if (groups.length === initialLength) {
+             console.log(`[AI Launch] Group "${groupName}" not found to remove.`);
+             return false;
+        }
+
+        fs.writeFileSync(groupsPath, JSON.stringify(groups, null, 4), 'utf8');
+        console.log(`[AI Launch] Successfully removed group "${groupName}".`);
+        return true;
+    } catch (e) {
+        console.error('Error in removeGroupByName:', e);
+        return false;
+    }
+}
+
 module.exports = {
     scanApps,
     launchAppByPath,
     launchAppByName,
-    launchGroupByName
+    launchGroupByName,
+    closeAppByPath,
+    closeAppByName,
+    closeGroupByName,
+    createGroupByName,
+    addAppsToGroup,
+    removeAppsFromGroup,
+    removeGroupByName
 };

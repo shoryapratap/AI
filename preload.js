@@ -16,6 +16,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     scanApps: (forceFullScan) => ipcRenderer.invoke('scan-apps', forceFullScan),
     launchApp: (appPath) => ipcRenderer.invoke('launch-app', appPath),
     saveAppGroups: (groups) => ipcRenderer.invoke('save-app-groups', groups),
+    getAppGroups: () => ipcRenderer.invoke('get-app-groups'),
+    onAppGroupsUpdated: (callback) => {
+        ipcRenderer.removeAllListeners('app-groups-updated');
+        ipcRenderer.on('app-groups-updated', callback);
+    },
 
     // AI Bridge
     getSystemPrompt: () => ipcRenderer.invoke('get-system-prompt'),

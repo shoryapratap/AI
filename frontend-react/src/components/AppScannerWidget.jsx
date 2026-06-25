@@ -14,14 +14,28 @@ const AppScannerWidget = ({ onClose }) => {
     const [isCreatingTab, setIsCreatingTab] = useState(false);
     const [newTabName, setNewTabName] = useState('');
     const [selectedApps, setSelectedApps] = useState([]);
-    const [savedTabs, setSavedTabs] = useState(() => {
-        const saved = localStorage.getItem('appScannerTabs');
-        if (saved) {
-            try { return JSON.parse(saved); } catch(e) {}
-        }
-        return [];
-    });
+    const [savedTabs, setSavedTabs] = useState([]);
+    const [isLoaded, setIsLoaded] = useState(false);
     const [editingTabId, setEditingTabId] = useState(null);
+
+    useEffect(() => {
+        const loadGroups = async () => {
+            if (window.electronAPI && window.electronAPI.getAppGroups) {
+                const groups = await window.electronAPI.getAppGroups();
+                setSavedTabs(groups || []);
+                setIsLoaded(true);
+            } else {
+                setIsLoaded(true);
+            }
+        };
+        loadGroups();
+
+        if (window.electronAPI && window.electronAPI.onAppGroupsUpdated) {
+            window.electronAPI.onAppGroupsUpdated(() => {
+                loadGroups();
+            });
+        }
+    }, []);
 
     useEffect(() => {
         if (scannedApps.length === 0) {
@@ -36,11 +50,12 @@ const AppScannerWidget = ({ onClose }) => {
     }, [scannedApps]);
 
     useEffect(() => {
+        if (!isLoaded) return;
         localStorage.setItem('appScannerTabs', JSON.stringify(savedTabs));
         if (window.electronAPI && window.electronAPI.saveAppGroups) {
             window.electronAPI.saveAppGroups(savedTabs);
         }
-    }, [savedTabs]);
+    }, [savedTabs, isLoaded]);
 
     const handleSaveTab = () => {
         if (!newTabName.trim() || selectedApps.length === 0) return;

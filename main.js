@@ -130,6 +130,18 @@ ipcMain.handle('save-app-groups', (event, groups) => {
     }
 });
 
+ipcMain.handle('get-app-groups', () => {
+    const groupsPath = path.join(__dirname, 'memory', 'app_groups.json');
+    try {
+        if (fs.existsSync(groupsPath)) {
+            return JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
+        }
+    } catch (e) {
+        console.error('Error reading app groups:', e);
+    }
+    return [];
+});
+
 ipcMain.handle('get-memory', () => {
     const memPath = path.join(__dirname, 'memory', 'permanent_details.json');
     try {
@@ -171,7 +183,7 @@ ipcMain.handle('get-system-prompt', () => {
                 const groups = JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
                 if (groups && groups.length > 0) {
                     const groupNames = groups.map(g => g.name).join(', ');
-                    promptText += `\n\n[SYSTEM INFO]\nThe user currently has the following App Groups saved: ${groupNames}.\nIf the user asks to open any of these, use <COMMAND: LAUNCH_GROUP>GroupName</COMMAND> in your speech.`;
+                    promptText += `\n\n[SYSTEM INFO]\nThe user currently has the following App Groups saved: ${groupNames}.\nIf the user asks to open any of these, use <COMMAND: LAUNCH_GROUP>GroupName</COMMAND>. If the user asks to add apps to them, use <COMMAND: ADD_APP_TO_GROUP>GroupName|App1,App2</COMMAND>. If the user asks to remove apps or delete a group, use <COMMAND: REMOVE_APP_FROM_GROUP> or <COMMAND: REMOVE_GROUP>.`;
                 }
             } catch (err) {}
         }
@@ -186,7 +198,15 @@ ipcMain.handle('get-system-prompt', () => {
 ipcMain.handle('handle-ai-task', async (event, aiResponse) => {
     console.log('[main.js] Received AI response for task manager:');
     console.log(aiResponse);
-    return await handleAIOutput(aiResponse);
+    const executed = await handleAIOutput(aiResponse);
+    
+    if (executed && /(CREATE_GROUP|ADD_APP_TO_GROUP|REMOVE_APP_FROM_GROUP|REMOVE_GROUP)/.test(aiResponse)) {
+        if (mainWindow) {
+            mainWindow.webContents.send('app-groups-updated');
+        }
+    }
+    
+    return executed;
 });
 
 ipcMain.handle('clean-ai-text', (event, aiResponse) => {
