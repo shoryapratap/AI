@@ -245,11 +245,47 @@ export function useGeminiLive() {
                 });
             }
 
-            if (msg.serverContent && msg.serverContent.turnComplete) {
-                // The VoiceOrb animation is enough for the user to know the AI responded.
-                if (window.electronAPI && window.electronAPI.handleAITask) {
-                    window.electronAPI.handleAITask(currentAiResponseRef.current);
+            if (msg.toolCall && msg.toolCall.functionCalls) {
+                console.log("Received Tool Call from Gemini:", msg.toolCall.functionCalls);
+                
+                const responses = [];
+                for (const call of msg.toolCall.functionCalls) {
+                    const funcName = call.name;
+                    const args = call.args;
+                    
+                    let commandStr = "";
+                    if (funcName === 'launch_app') commandStr = `<COMMAND: LAUNCH_APP>${args.appName}</COMMAND>`;
+                    else if (funcName === 'close_app') commandStr = `<COMMAND: CLOSE_APP>${args.appName}</COMMAND>`;
+                    else if (funcName === 'launch_group') commandStr = `<COMMAND: LAUNCH_GROUP>${args.groupName}</COMMAND>`;
+                    else if (funcName === 'close_group') commandStr = `<COMMAND: CLOSE_GROUP>${args.groupName}</COMMAND>`;
+                    else if (funcName === 'create_group') commandStr = `<COMMAND: CREATE_GROUP>${args.groupName}|${args.apps}</COMMAND>`;
+                    else if (funcName === 'add_app_to_group') commandStr = `<COMMAND: ADD_APP_TO_GROUP>${args.groupName}|${args.apps}</COMMAND>`;
+                    else if (funcName === 'remove_app_from_group') commandStr = `<COMMAND: REMOVE_APP_FROM_GROUP>${args.groupName}|${args.apps}</COMMAND>`;
+                    else if (funcName === 'remove_group') commandStr = `<COMMAND: REMOVE_GROUP>${args.groupName}</COMMAND>`;
+                    
+                    if (commandStr && window.electronAPI && window.electronAPI.handleAITask) {
+                        console.log("Translated to command:", commandStr);
+                        window.electronAPI.handleAITask(commandStr);
+                    }
+                    
+                    responses.push({
+                        id: call.id,
+                        name: call.name,
+                        response: { result: "Task executed successfully on the system." }
+                    });
                 }
+                
+                // Send functionResponse back to Gemini so it can resume speaking
+                if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                    wsRef.current.send(JSON.stringify({
+                        toolResponse: {
+                            functionResponses: responses
+                        }
+                    }));
+                }
+            }
+
+            if (msg.serverContent && msg.serverContent.turnComplete) {
                 window.audioChunksReceived = 0;
                 currentAiResponseRef.current = '';
             }
@@ -304,7 +340,104 @@ export function useGeminiLive() {
                                     }
                                 }
                             }
-                        }
+                        },
+                        tools: [
+                            {
+                                functionDeclarations: [
+                                    {
+                                        name: "launch_app",
+                                        description: "Launches an application by name.",
+                                        parameters: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                appName: { type: "STRING", description: "The exact name of the application to launch." }
+                                            },
+                                            required: ["appName"]
+                                        }
+                                    },
+                                    {
+                                        name: "close_app",
+                                        description: "Closes a running application by name.",
+                                        parameters: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                appName: { type: "STRING", description: "The exact name of the application to close." }
+                                            },
+                                            required: ["appName"]
+                                        }
+                                    },
+                                    {
+                                        name: "launch_group",
+                                        description: "Launches a predefined group of applications.",
+                                        parameters: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                groupName: { type: "STRING", description: "The exact name of the group to launch." }
+                                            },
+                                            required: ["groupName"]
+                                        }
+                                    },
+                                    {
+                                        name: "close_group",
+                                        description: "Closes all applications within a predefined group.",
+                                        parameters: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                groupName: { type: "STRING", description: "The exact name of the group to close." }
+                                            },
+                                            required: ["groupName"]
+                                        }
+                                    },
+                                    {
+                                        name: "create_group",
+                                        description: "Creates a new group of applications.",
+                                        parameters: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                groupName: { type: "STRING", description: "The name of the new group." },
+                                                apps: { type: "STRING", description: "A comma-separated list of application names to include in the group." }
+                                            },
+                                            required: ["groupName", "apps"]
+                                        }
+                                    },
+                                    {
+                                        name: "add_app_to_group",
+                                        description: "Adds applications to an existing group.",
+                                        parameters: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                groupName: { type: "STRING", description: "The name of the group." },
+                                                apps: { type: "STRING", description: "A comma-separated list of application names to add." }
+                                            },
+                                            required: ["groupName", "apps"]
+                                        }
+                                    },
+                                    {
+                                        name: "remove_app_from_group",
+                                        description: "Removes applications from an existing group.",
+                                        parameters: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                groupName: { type: "STRING", description: "The name of the group." },
+                                                apps: { type: "STRING", description: "A comma-separated list of application names to remove." }
+                                            },
+                                            required: ["groupName", "apps"]
+                                        }
+                                    },
+                                    {
+                                        name: "remove_group",
+                                        description: "Deletes an existing group completely.",
+                                        parameters: {
+                                            type: "OBJECT",
+                                            properties: {
+                                                groupName: { type: "STRING", description: "The name of the group to delete." }
+                                            },
+                                            required: ["groupName"]
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 };
                 if (systemPromptText) {
