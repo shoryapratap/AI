@@ -9,10 +9,7 @@ const fs = require('fs');
 app.commandLine.appendSwitch('ignore-certificate-errors');
 app.commandLine.appendSwitch('allow-insecure-localhost');
 
-// Fix GPU cache access denied error
-app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
-app.commandLine.appendSwitch('disable-gpu-sandbox');
-app.commandLine.appendSwitch('disable-http-cache');
+// Cache disabling switches removed to fix lag and slow startup
 
 // Suppress Chromium console noise (like SSL handshake errors)
 app.commandLine.appendSwitch('log-level', '3');
@@ -37,7 +34,7 @@ function createWindow() {
         backgroundColor: '#030307',
         icon: icon,
         titleBarStyle: 'hidden',
-        show: false,            // Don't flash; show after ready-to-show
+        show: true,            // Show instantly to fix delayed startup perception
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -54,10 +51,21 @@ function createWindow() {
         mainWindow.loadFile(path.join(__dirname, 'frontend-react', 'dist', 'index.html'));
     }
 
-    // Show window gracefully after paint
-    mainWindow.once('ready-to-show', () => {
-        mainWindow.show();
-    });
+    // Create basic application menu to enable standard copy/paste shortcuts
+    const template = [{
+        label: 'Edit',
+        submenu: [
+            { role: 'undo' },
+            { role: 'redo' },
+            { type: 'separator' },
+            { role: 'cut' },
+            { role: 'copy' },
+            { role: 'paste' },
+            { role: 'selectAll' }
+        ]
+    }];
+    const { Menu } = require('electron');
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 
     // Open DevTools in dev mode
     // mainWindow.webContents.openDevTools();

@@ -1170,7 +1170,8 @@ body.electron .hud-navbar {
 .anime-character-container.talking .anime-img,
 .live2d-container.talking canvas {
     animation: animeBreathe 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 30px rgba(138, 100, 255, 0.4));
+    /* Removed heavy drop-shadow filter to eliminate massive GPU lag */
+    /* filter: drop-shadow(0 0 30px rgba(138, 100, 255, 0.4)); */
 }
 
 @keyframes animeFloat {
