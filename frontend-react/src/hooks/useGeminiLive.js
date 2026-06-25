@@ -51,7 +51,10 @@ export function useGeminiLive() {
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     channelCount: 1,
-                    sampleRate: 16000
+                    sampleRate: 16000,
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
                 }
             });
             streamRef.current = stream;
@@ -129,11 +132,6 @@ export function useGeminiLive() {
 
             if (isMutedRef.current) {
                 // Silently drain the audio chunk without playing
-                activeNodesRef.current -= 1;
-                if (activeNodesRef.current <= 0) {
-                    activeNodesRef.current = 0;
-                    setIsAiTalking(false);
-                }
                 continue;
             }
 
@@ -146,7 +144,8 @@ export function useGeminiLive() {
 
             const currentTime = audioContextRef.current.currentTime;
             if (nextPlayTimeRef.current < currentTime) {
-                nextPlayTimeRef.current = currentTime;
+                // Add a small buffer to prevent underflow stuttering
+                nextPlayTimeRef.current = currentTime + 0.05;
             }
 
             source.start(nextPlayTimeRef.current);
@@ -232,7 +231,9 @@ export function useGeminiLive() {
                         .replace(/<MESSAGE>|<\/MESSAGE>/gi, '')
                         .trim();
 
-                    if (!isNewTurn && updated.length > 0 && updated[updated.length - 1].role === 'ai') {
+                    const lastMessage = updated.length > 0 ? updated[updated.length - 1] : null;
+
+                    if (lastMessage && lastMessage.role === 'ai' && (!isNewTurn || lastMessage.content === '')) {
                         updated[updated.length - 1] = {
                             role: 'ai',
                             content: displayText
