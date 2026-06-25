@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Mic, ChevronDown } from 'lucide-react';
+import { Plus, Mic, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 
-const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateChange, isVoiceConnected, startVoice, stopVoice, voiceError }) => {
+const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateChange, isMicActive, onToggleMic, voiceError, isMuted, onToggleMute }) => {
     const [query, setQuery] = useState('');
-    const [isListening, setIsListening] = useState(false);
     const [isThinking, setIsThinking] = useState(false);
 
     const handleKeyPress = (e) => {
@@ -29,14 +28,8 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
     };
 
     const handleMicClick = () => {
-        if (isVoiceConnected) {
-            if (stopVoice) stopVoice();
-            setIsListening(false);
-            if (onMicStateChange) onMicStateChange(false);
-        } else {
-            if (startVoice) startVoice();
-            setIsListening(true);
-            if (onMicStateChange) onMicStateChange(true);
+        if (onToggleMic) {
+            onToggleMic();
         }
     };
 
@@ -56,7 +49,7 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
                 <input 
                     type="text" 
                     id="chat-input" 
-                    placeholder={isVoiceConnected ? 'Gemini Live Voice is active...' : 'Ask Emma...'}
+                    placeholder={isMicActive ? 'Gemini Live Voice is active...' : 'Ask Emma...'}
                     autoComplete="off"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -70,12 +63,26 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
                     </div>
                     
                     <button 
+                        className="capsule-btn mute-btn" 
+                        title={isMuted ? "Unmute AI Voice" : "Mute AI Voice"}
+                        onClick={onToggleMute}
+                        style={{
+                            color: isMuted ? 'rgba(255, 255, 255, 0.4)' : '#ffffff',
+                            marginRight: '0px',
+                            padding: '6px'
+                        }}
+                    >
+                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                    </button>
+
+                    <button 
                         className="capsule-btn mic-btn" 
                         title="Use microphone"
                         onClick={handleMicClick}
                         style={{
-                            color: isVoiceConnected ? '#ef4444' : '',
-                            backgroundColor: isVoiceConnected ? 'rgba(239, 68, 68, 0.08)' : ''
+                            color: isMicActive ? '#ef4444' : '',
+                            backgroundColor: isMicActive ? 'rgba(239, 68, 68, 0.08)' : '',
+                            marginLeft: '-4px'
                         }}
                     >
                         <Mic size={20} />

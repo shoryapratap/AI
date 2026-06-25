@@ -4,6 +4,23 @@ export function useGeminiLive() {
     const [isConnected, setIsConnected] = useState(false);
     const [isAiTalking, setIsAiTalking] = useState(false);
     const [isUserTalking, setIsUserTalking] = useState(false);
+    
+    // Mute control
+    const [isMuted, _setIsMuted] = useState(false);
+    const isMutedRef = useRef(false);
+    const toggleMute = () => {
+        isMutedRef.current = !isMutedRef.current;
+        _setIsMuted(isMutedRef.current);
+    };
+
+    // Mic mute control
+    const [isMicMuted, _setIsMicMuted] = useState(false);
+    const isMicMutedRef = useRef(false);
+    const toggleMicMute = () => {
+        isMicMutedRef.current = !isMicMutedRef.current;
+        _setIsMicMuted(isMicMutedRef.current);
+    };
+
     const [error, setError] = useState(null);
     const [messages, setMessages] = useState([
         { role: 'ai', content: 'Hello! I am Emma. How can I help you control your PC today?' }
@@ -57,6 +74,8 @@ export function useGeminiLive() {
                 const rms = Math.sqrt(sum / inputData.length);
                 setIsUserTalking(rms > 0.05);
 
+                if (isMicMutedRef.current) return;
+
                 const pcmData = new Int16Array(inputData.length);
                 for (let i = 0; i < inputData.length; i++) {
                     let s = Math.max(-1, Math.min(1, inputData[i]));
@@ -108,6 +127,16 @@ export function useGeminiLive() {
         while (playQueueRef.current.length > 0) {
             const chunk = playQueueRef.current.shift();
 
+            if (isMutedRef.current) {
+                // Silently drain the audio chunk without playing
+                activeNodesRef.current -= 1;
+                if (activeNodesRef.current <= 0) {
+                    activeNodesRef.current = 0;
+                    setIsAiTalking(false);
+                }
+                continue;
+            }
+
             const buffer = audioContextRef.current.createBuffer(1, chunk.length, 24000);
             buffer.copyToChannel(chunk, 0);
 
@@ -153,11 +182,13 @@ export function useGeminiLive() {
                 const content = msg.serverContent;
 
                 if (content.modelTurn && content.modelTurn.parts) {
+                    console.log("Model parts received:", content.modelTurn.parts); // DEBUG LOG
                     for (const part of content.modelTurn.parts) {
                         if (part.text) {
                             newText += part.text;
                         }
                         if (part.inlineData && part.inlineData.data) {
+                            console.log("Audio data received!"); // DEBUG LOG
                             window.audioChunksReceived = (window.audioChunksReceived || 0) + 1;
                             const binary = atob(part.inlineData.data);
                             const len = binary.length;
@@ -214,7 +245,6 @@ export function useGeminiLive() {
             }
 
             if (msg.serverContent && msg.serverContent.turnComplete) {
-                // If there's no text at all, we don't need to force a chat bubble for audio.
                 // The VoiceOrb animation is enough for the user to know the AI responded.
                 if (window.electronAPI && window.electronAPI.handleAITask) {
                     window.electronAPI.handleAITask(currentAiResponseRef.current);
@@ -229,10 +259,18 @@ export function useGeminiLive() {
         }
     }, []);
 
-    const startConversation = async () => {
-        try {
-            setError(null);
-            await connectMicrophone();
+    const startConversation = (withMic = true, initialText = null) => {
+        return new Promise(async (resolve, reject) => {
+            try {
+                setError(null);
+                if (withMic) {
+                    await connectMicrophone();
+                } else {
+                    // Create context for playback only
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                    audioContext.resume().catch(console.error);
+                    audioContextRef.current = audioContext;
+                }
 
             let rawKey = localStorage.getItem('geminiApiKey') || '';
             const API_KEY = rawKey.replace(/['"]/g, '').trim();
@@ -275,20 +313,20 @@ export function useGeminiLive() {
                 }
                 ws.send(JSON.stringify(setupPayload));
 
-                // Prompt the AI to introduce itself instantly so the user hears voice
                 setTimeout(() => {
                     if (ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            clientContent: {
-                                turns: [
-                                    {
-                                        role: 'user',
-                                        parts: [{ text: "Hello! Please briefly introduce yourself as Emma, and ask how you can help." }]
-                                    }
-                                ],
-                                turnComplete: true
-                            }
-                        }));
+                        if (initialText) {
+                            sendTextMessage(initialText);
+                        } else if (withMic) {
+                            // Prompt AI to introduce itself only if opening mic without text
+                            ws.send(JSON.stringify({
+                                clientContent: {
+                                    turns: [{ role: 'user', parts: [{ text: "Hello! Please introduce yourself briefly." }] }],
+                                    turnComplete: true
+                                }
+                            }));
+                        }
+                        resolve();
                     }
                 }, 500);
             };
@@ -309,10 +347,12 @@ export function useGeminiLive() {
                 setIsConnected(false);
                 stopConversation();
             };
-        } catch (err) {
-            console.error("Failed to start voice:", err);
-            setError(`Failed to start voice: ${err.message}`);
-        }
+            } catch (err) {
+                console.error("Failed to start voice:", err);
+                setError(`Failed to start voice: ${err.message}`);
+                reject(err);
+            }
+        });
     };
 
     const stopConversation = () => {
@@ -383,6 +423,10 @@ export function useGeminiLive() {
         setMessages, // expose setter in case we want to manipulate it externally
         startConversation,
         stopConversation,
-        sendTextMessage
+        sendTextMessage,
+        isMuted,
+        toggleMute,
+        isMicMuted,
+        toggleMicMute
     };
 }

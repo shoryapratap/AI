@@ -19,14 +19,27 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
     const [isAiTalking, setIsAiTalking] = useState(false);
     const [isUserTalking, setIsUserTalking] = useState(false);
     const [systemPrompt, setSystemPrompt] = useState('');
+    const autoStartedRef = React.useRef(false);
+    const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage, isMuted, toggleMute, isMicMuted, toggleMicMute } = useGeminiLive();
 
     React.useEffect(() => {
         if (window.electronAPI && window.electronAPI.getSystemPrompt) {
             window.electronAPI.getSystemPrompt().then(setSystemPrompt);
         }
-    }, []);
 
-    const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage } = useGeminiLive();
+        if (!autoStartedRef.current) {
+            autoStartedRef.current = true;
+            // Auto-connect Mic and Speaker on startup
+            const rawKey = localStorage.getItem('geminiApiKey');
+            if (rawKey) {
+                // Delay slightly to ensure UI is ready
+                setTimeout(() => {
+                    startConversation(true).catch(err => console.log("Auto-start voice failed:", err));
+                }, 1000);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const displayAiTalking = isAiTalking || geminiAiTalking;
     const displayUserTalking = isUserTalking || geminiUserTalking;
@@ -38,54 +51,12 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
             return;
         }
 
-        // Fallback to text-only REST API if voice is disabled
-        setMessages(prev => [...prev, { role: 'user', content }]);
-        setIsAiTalking(true);
-
+        // Start Bidi API without microphone to get native audio stream output for text input
         try {
-            const rawKey = localStorage.getItem('geminiApiKey') || '';
-            const API_KEY = rawKey.replace(/['"]/g, '').trim();
-
-            if (!API_KEY) {
-                setMessages(prev => [...prev, { role: 'ai', content: 'Error: Gemini API Key is missing. Please add it in settings.' }]);
-                setIsAiTalking(false);
-                return;
-            }
-
-            const payload = {
-                contents: [{ parts: [{ text: content }] }]
-            };
-            if (systemPrompt) {
-                payload.systemInstruction = { parts: [{ text: systemPrompt }] };
-            }
-
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!res.ok) {
-                throw new Error(`API Error: ${res.status} ${res.statusText}`);
-            }
-
-            const data = await res.json();
-            const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
-
-            let displayResponse = aiResponse;
-            if (window.electronAPI) {
-                if (window.electronAPI.handleAITask) {
-                    window.electronAPI.handleAITask(aiResponse);
-                }
-                if (window.electronAPI.cleanAIText) {
-                    displayResponse = await window.electronAPI.cleanAIText(aiResponse);
-                }
-            }
-
-            setMessages(prev => [...prev, { role: 'ai', content: displayResponse }]);
+            setIsAiTalking(true);
+            await startConversation(false, content);
         } catch (err) {
             setMessages(prev => [...prev, { role: 'ai', content: `Error connecting to Gemini: ${err.message}` }]);
-        } finally {
             setIsAiTalking(false);
         }
     };
@@ -135,10 +106,11 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
                     setActiveModel={setActiveModel}
                     onSendMessage={handleSendMessage}
                     onMicStateChange={(isListening) => setIsUserTalking(isListening)}
-                    isVoiceConnected={isConnected}
-                    startVoice={startConversation}
-                    stopVoice={stopConversation}
+                    isMicActive={!isMicMuted && isConnected}
+                    onToggleMic={toggleMicMute}
                     voiceError={error}
+                    isMuted={isMuted}
+                    onToggleMute={toggleMute}
                 />
             </div>
         </div>
