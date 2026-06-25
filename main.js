@@ -171,7 +171,7 @@ ipcMain.handle('get-system-prompt', () => {
                 const groups = JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
                 if (groups && groups.length > 0) {
                     const groupNames = groups.map(g => g.name).join(', ');
-                    promptText += `\n\n[SYSTEM INFO]\nThe user currently has the following App Groups saved: ${groupNames}.\nIf the user asks to open any of these, use <COMMAND: LAUNCH_GROUP>GroupName</COMMAND>.`;
+                    promptText += `\n\n[SYSTEM INFO]\nThe user currently has the following App Groups saved: ${groupNames}.\nIf the user asks to open any of these, use <COMMAND: LAUNCH_GROUP>GroupName</COMMAND> in your speech.`;
                 }
             } catch (err) {}
         }
