@@ -237,19 +237,19 @@ body.electron .workspace-container {
 
 /* 3D Recess & Rotate Animations */
 .cube-room.to-settings #main-view {
-    animation: rotateMainToSettings 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: rotateMainToSettings 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .cube-room.to-settings #settings-view {
-    animation: rotateSettingsToSettings 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: rotateSettingsToSettings 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .cube-room.to-workspace #main-view {
-    animation: rotateMainToWorkspace 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: rotateMainToWorkspace 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .cube-room.to-workspace #settings-view {
-    animation: rotateSettingsToWorkspace 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: rotateSettingsToWorkspace 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 @keyframes rotateMainToSettings {
@@ -309,6 +309,34 @@ body.electron .workspace-container {
     opacity: 1;
     pointer-events: auto !important;
     z-index: 100;
+}
+
+/* Custom Scrollbar */
+.view-panel::-webkit-scrollbar,
+.settings-hub::-webkit-scrollbar,
+div[style*="overflow-y"]::-webkit-scrollbar,
+div[style*="overflowY"]::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.view-panel::-webkit-scrollbar-track,
+.settings-hub::-webkit-scrollbar-track,
+div[style*="overflow-y"]::-webkit-scrollbar-track,
+div[style*="overflowY"]::-webkit-scrollbar-track {
+    background: transparent;
+}
+.view-panel::-webkit-scrollbar-thumb,
+.settings-hub::-webkit-scrollbar-thumb,
+div[style*="overflow-y"]::-webkit-scrollbar-thumb,
+div[style*="overflowY"]::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+.view-panel::-webkit-scrollbar-thumb:hover,
+.settings-hub::-webkit-scrollbar-thumb:hover,
+div[style*="overflow-y"]::-webkit-scrollbar-thumb:hover,
+div[style*="overflowY"]::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
 }
 
 /* Glassy Shroud pseudo-element */

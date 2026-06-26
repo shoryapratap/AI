@@ -30,7 +30,7 @@ function App() {
       setIsBreathing(false);
       setCubeClass(newView === 'settings' ? 'to-settings' : 'to-workspace');
       setIsTransitioning(false);
-    }, 1600);
+    }, 2400);
   };
 
   // Handle Dynamic Glow Updates
