@@ -5,6 +5,10 @@ const { handleAIOutput, cleanAIOutput } = require('./core/taskManager');
 const { spawn, exec } = require('child_process');
 const fs = require('fs');
 
+import('electron-context-menu').then(contextMenu => {
+    contextMenu.default({ showInspectElement: true });
+});
+
 // Suppress SSL handshake errors caused by strict certificate checking on external CDN requests
 app.commandLine.appendSwitch('ignore-certificate-errors');
 app.commandLine.appendSwitch('allow-insecure-localhost');

@@ -7,12 +7,14 @@ const SettingsPanel = ({ activeModel, setActiveModel, activeColor, setActiveColo
 
     // State for API Keys
     const [geminiKey, setGeminiKey] = useState('');
+    const [geminiVisionKey, setGeminiVisionKey] = useState('');
     const [groqKey, setGroqKey] = useState('');
     const [openAiKey, setOpenAiKey] = useState('');
 
     useEffect(() => {
         // Load saved API keys from localStorage on mount
         setGeminiKey(localStorage.getItem('geminiApiKey') || '');
+        setGeminiVisionKey(localStorage.getItem('geminiVisionApiKey') || '');
         setGroqKey(localStorage.getItem('groqApiKey') || '');
         setOpenAiKey(localStorage.getItem('openAiApiKey') || '');
     }, []);
@@ -20,6 +22,7 @@ const SettingsPanel = ({ activeModel, setActiveModel, activeColor, setActiveColo
     const handleSave = () => {
         // Save to localStorage
         localStorage.setItem('geminiApiKey', geminiKey);
+        localStorage.setItem('geminiVisionApiKey', geminiVisionKey);
         localStorage.setItem('groqApiKey', groqKey);
         localStorage.setItem('openAiApiKey', openAiKey);
         
@@ -39,7 +42,8 @@ const SettingsPanel = ({ activeModel, setActiveModel, activeColor, setActiveColo
 
     return (
         <div id="settings-view" className={`view-panel ${isFocused ? 'active' : ''}`}>
-            <div className="settings-hub" style={{ flexDirection: 'column', gap: '40px', padding: '40px 60px' }}>
+            <div style={{ width: '100%', height: '100%', overflowY: 'auto', paddingBottom: '100px' }}>
+                <div className="settings-hub" style={{ flexDirection: 'column', gap: '40px', padding: '40px 60px' }}>
                 
                 {/* General Settings Section */}
                 <div className="settings-section">
@@ -92,11 +96,32 @@ const SettingsPanel = ({ activeModel, setActiveModel, activeColor, setActiveColo
                                             background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)', 
                                             color: 'white', borderRadius: '8px', 
                                             pointerEvents: 'auto', userSelect: 'text', WebkitUserSelect: 'text',
-                                            WebkitAppRegion: 'no-drag', zIndex: 10000, position: 'relative',
-                                            transform: 'translateZ(10px)'
+                                            WebkitAppRegion: 'no-drag',
+                                            position: 'relative', zIndex: 99999, transform: 'translateZ(20px)'
                                         }}
                                         value={geminiKey}
                                         onChange={(e) => setGeminiKey(e.target.value)}
+                                        onFocus={(e) => e.target.select()}
+                                    />
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: '20px' }}>
+                                    <label htmlFor="setting-vision" style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>Vision API Key (Secondary)</label>
+                                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '10px' }}>Required for Screen Understanding / Mouse Control</p>
+                                        <input 
+                                        type="text" 
+                                        id="setting-vision" 
+                                        placeholder="Paste your second Gemini API key here..." 
+                                        style={{ 
+                                            fontSize: '1.1rem', padding: '12px 16px', width: '100%', 
+                                            background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)', 
+                                            color: 'white', borderRadius: '8px', 
+                                            pointerEvents: 'auto', userSelect: 'text', WebkitUserSelect: 'text',
+                                            WebkitAppRegion: 'no-drag',
+                                            position: 'relative', zIndex: 99999, transform: 'translateZ(20px)'
+                                        }}
+                                        value={geminiVisionKey}
+                                        onChange={(e) => setGeminiVisionKey(e.target.value)}
                                         onFocus={(e) => e.target.select()}
                                     />
                                 </div>
@@ -104,12 +129,12 @@ const SettingsPanel = ({ activeModel, setActiveModel, activeColor, setActiveColo
                         </div>
                     </div>
 
-                    <div className="settings-footer" style={{ marginTop: '25px', position: 'relative', zIndex: 10000, transform: 'translateZ(10px)' }}>
+                    <div className="settings-footer" style={{ marginTop: '25px' }}>
                         <button className="save-btn" onClick={handleSave} style={{ pointerEvents: 'auto', userSelect: 'auto', padding: '12px 32px', fontSize: '1.1rem', cursor: 'pointer', background: 'var(--accent-purple)', border: 'none', color: 'white', borderRadius: '8px' }}>Save API Key</button>
                         <span className={`save-status ${isSaved ? '' : 'hidden'}`} style={{ marginLeft: '15px', color: 'var(--accent-emerald)', opacity: isSaved ? 1 : 0, transition: 'opacity 0.3s' }}>Saved!</span>
                     </div>
+                    </div>
                 </div>
-
             </div>
         </div>
     );
