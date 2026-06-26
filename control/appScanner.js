@@ -499,8 +499,60 @@ async function removeGroupByName(groupName) {
     }
 }
 
+async function handleAppCommand(task, content) {
+    let executed = false;
+    switch (task) {
+        case 'LAUNCH_APP':
+            executed = await launchAppByName(content);
+            if (executed) console.log(`[App Scanner] Successfully launched app: ${content}`);
+            break;
+        case 'LAUNCH_GROUP':
+            executed = await launchGroupByName(content);
+            if (executed) console.log(`[App Scanner] Successfully launched group: ${content}`);
+            break;
+        case 'CLOSE_APP':
+            executed = await closeAppByName(content);
+            if (executed) console.log(`[App Scanner] Successfully closed app: ${content}`);
+            break;
+        case 'CLOSE_GROUP':
+            executed = await closeGroupByName(content);
+            if (executed) console.log(`[App Scanner] Successfully closed group: ${content}`);
+            break;
+        case 'REMOVE_GROUP':
+            console.log(`[App Scanner] Removing group: ${content}`);
+            executed = await removeGroupByName(content);
+            if (executed) console.log(`[App Scanner] Successfully removed group: ${content}`);
+            break;
+        case 'CREATE_GROUP':
+        case 'ADD_APP_TO_GROUP':
+        case 'REMOVE_APP_FROM_GROUP':
+            const parts = content.split('|');
+            if (parts.length >= 1) {
+                const groupName = parts[0].trim();
+                const appsArray = parts.length > 1 ? parts[1].split(',').map(s => s.trim()).filter(s => s) : [];
+                
+                if (task === 'CREATE_GROUP') {
+                    console.log(`[App Scanner] Creating group: ${groupName}`);
+                    executed = await createGroupByName(groupName, appsArray);
+                    if (executed) console.log(`[App Scanner] Successfully created group: ${groupName}`);
+                } else if (task === 'ADD_APP_TO_GROUP') {
+                    console.log(`[App Scanner] Adding apps to group: ${groupName}`);
+                    executed = await addAppsToGroup(groupName, appsArray);
+                    if (executed) console.log(`[App Scanner] Successfully added apps to group: ${groupName}`);
+                } else if (task === 'REMOVE_APP_FROM_GROUP') {
+                    console.log(`[App Scanner] Removing apps from group: ${groupName}`);
+                    executed = await removeAppsFromGroup(groupName, appsArray);
+                    if (executed) console.log(`[App Scanner] Successfully removed apps from group: ${groupName}`);
+                }
+            }
+            break;
+    }
+    return executed;
+}
+
 module.exports = {
     scanApps,
+    handleAppCommand,
     launchAppByPath,
     launchAppByName,
     launchGroupByName,

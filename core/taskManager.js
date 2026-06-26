@@ -1,13 +1,5 @@
-const { 
-    launchAppByName, 
-    launchGroupByName, 
-    closeAppByName,
-    closeGroupByName,
-    createGroupByName, 
-    addAppsToGroup, 
-    removeAppsFromGroup, 
-    removeGroupByName 
-} = require('../control/appScanner');
+const { handleAppCommand } = require('../control/appScanner');
+const { handleKeyboardCommand } = require('../control/keyboardMouse');
 
 /**
  * Task Manager
@@ -28,63 +20,22 @@ async function handleAIOutput(aiResponse) {
         
         console.log(`[Task Manager] AI issued task: ${task} with content: ${content}`);
 
-        switch (task) {
-            case 'LAUNCH_APP':
-                const successApp = await launchAppByName(content);
-                if (successApp) console.log(`[Task Manager] Successfully launched app: ${content}`);
-                executed = true;
-                break;
-                
-            case 'LAUNCH_GROUP':
-                const successGrp = await launchGroupByName(content);
-                if (successGrp) console.log(`[Task Manager] Successfully launched group: ${content}`);
-                executed = true;
-                break;
+        // Route to the appropriate module based on task prefix or set
+        const appCommands = [
+            'LAUNCH_APP', 'LAUNCH_GROUP', 'CLOSE_APP', 'CLOSE_GROUP',
+            'REMOVE_GROUP', 'CREATE_GROUP', 'ADD_APP_TO_GROUP', 'REMOVE_APP_FROM_GROUP'
+        ];
+        
+        const keyboardCommands = [
+            'KEYBOARD_ACTION', 'CLICK'
+        ];
 
-            case 'CLOSE_APP':
-                const successClose = await closeAppByName(content);
-                if (successClose) console.log(`[Task Manager] Successfully closed app: ${content}`);
-                executed = true;
-                break;
-                
-            case 'CLOSE_GROUP':
-                const successCloseGrp = await closeGroupByName(content);
-                if (successCloseGrp) console.log(`[Task Manager] Successfully closed group: ${content}`);
-                executed = true;
-                break;
-
-            case 'REMOVE_GROUP':
-                console.log(`[Task Manager] Removing group: ${content}`);
-                const successDelGrp = await removeGroupByName(content);
-                if (successDelGrp) console.log(`[Task Manager] Successfully removed group: ${content}`);
-                executed = true;
-                break;
-                
-            case 'CREATE_GROUP':
-            case 'ADD_APP_TO_GROUP':
-            case 'REMOVE_APP_FROM_GROUP':
-                // Expected content format: GroupName|App1,App2,App3
-                const parts = content.split('|');
-                if (parts.length >= 1) {
-                    const groupName = parts[0].trim();
-                    const appsArray = parts.length > 1 ? parts[1].split(',').map(s => s.trim()).filter(s => s) : [];
-                    
-                    if (task === 'CREATE_GROUP') {
-                        console.log(`[Task Manager] Creating group: ${groupName}`);
-                        const successCreate = await createGroupByName(groupName, appsArray);
-                        if (successCreate) console.log(`[Task Manager] Successfully created group: ${groupName}`);
-                    } else if (task === 'ADD_APP_TO_GROUP') {
-                        console.log(`[Task Manager] Adding apps to group: ${groupName}`);
-                        const successAdd = await addAppsToGroup(groupName, appsArray);
-                        if (successAdd) console.log(`[Task Manager] Successfully added apps to group: ${groupName}`);
-                    } else if (task === 'REMOVE_APP_FROM_GROUP') {
-                        console.log(`[Task Manager] Removing apps from group: ${groupName}`);
-                        const successRem = await removeAppsFromGroup(groupName, appsArray);
-                        if (successRem) console.log(`[Task Manager] Successfully removed apps from group: ${groupName}`);
-                    }
-                    executed = true;
-                }
-                break;
+        if (appCommands.includes(task)) {
+            executed = await handleAppCommand(task, content);
+        } else if (keyboardCommands.includes(task)) {
+            executed = await handleKeyboardCommand(task, content);
+        } else {
+            console.warn(`[Task Manager] Unhandled task: ${task}`);
         }
     }
 

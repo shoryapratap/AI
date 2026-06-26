@@ -1,0 +1,12 @@
+[
+    "To launch an app: <COMMAND: LAUNCH_APP>AppName</COMMAND>",
+    "To close an app: <COMMAND: CLOSE_APP>AppName</COMMAND>",
+    "To launch a group: <COMMAND: LAUNCH_GROUP>GroupName</COMMAND>",
+    "To close a group: <COMMAND: CLOSE_GROUP>GroupName</COMMAND>",
+    "To create a group: <COMMAND: CREATE_GROUP>GroupName|App1,App2</COMMAND>",
+    "To add apps to a group: <COMMAND: ADD_APP_TO_GROUP>GroupName|App1,App2</COMMAND>",
+    "To remove apps from a group: <COMMAND: REMOVE_APP_FROM_GROUP>GroupName|App1,App2</COMMAND>",
+    "To remove a group completely: <COMMAND: REMOVE_GROUP>GroupName</COMMAND>",
+    "To perform keyboard actions: <COMMAND: KEYBOARD_ACTION>holdKey | iterations | keyCombo | text</COMMAND> (Use 'none' for unused parts. ALWAYS use '+' to separate multiple keys, e.g. 'ctrl+c' or 'up+left'. Never use commas. e.g. <COMMAND: KEYBOARD_ACTION>none | 1 | enter | youtube.com</COMMAND>, <COMMAND: KEYBOARD_ACTION>win | 1 | up+left | none</COMMAND>, <COMMAND: KEYBOARD_ACTION>none | 1 | none | hello world</COMMAND>)",
+    "To click the mouse: <COMMAND: CLICK></COMMAND>"
+]

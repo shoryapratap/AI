@@ -9,6 +9,7 @@ This document tracks our progress, completed features, and upcoming tasks across
 - [x] Defined structured AI outputs (`systemPrompt.txt`) separating conversational `<MESSAGE>` from executable `<TASK>`.
 - [x] Created `handle-ai-task`, `clean-ai-text`, and `get-system-prompt` IPC bridges.
 - [x] Dynamically injected user's custom app groups into the AI system prompt to enable accurate `<COMMAND: LAUNCH_GROUP>` generation.
+- [x] Verified end-to-end AI workflow: Tool calls are translated to text commands, processed natively by Task Manager, and clean responses are routed to TTS.
 
 ## 🖥️ Frontend (`frontend-react`)
 - [x] Integrated Leaflet interactive map into `MapWidget.jsx`
