@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, nativeImage } = require('electron');
 const path = require('path');
 const { scanApps, launchAppByPath } = require('./control/appScanner');
 const { handleAIOutput, cleanAIOutput } = require('./core/taskManager');
+const screenshot = require('screenshot-desktop');
 const { spawn, exec } = require('child_process');
 const fs = require('fs');
 
@@ -215,6 +216,16 @@ ipcMain.handle('handle-ai-task', async (event, aiResponse) => {
 
 ipcMain.handle('clean-ai-text', (event, aiResponse) => {
     return cleanAIOutput(aiResponse);
+});
+
+ipcMain.handle('take-screenshot', async () => {
+    try {
+        const imgBuffer = await screenshot({ format: 'jpg' });
+        return imgBuffer.toString('base64');
+    } catch (e) {
+        console.error('Screenshot failed:', e);
+        return null;
+    }
 });
 
 // App lifecycle

@@ -11,6 +11,8 @@ import FloatingActionSidebar from './FloatingActionSidebar';
 import AppScannerWidget from './AppScannerWidget';
 import { Map, Camera, MonitorPlay } from 'lucide-react';
 import { useGeminiLive } from '../hooks/useGeminiLive';
+import { useVisionBrain } from '../hooks/useVisionBrain';
+import './SystemWidgets.css';
 
 const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
 
@@ -20,7 +22,12 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
     const [isUserTalking, setIsUserTalking] = useState(false);
     const [systemPrompt, setSystemPrompt] = useState('');
     const autoStartedRef = React.useRef(false);
-    const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage, isMuted, toggleMute, isMicMuted, toggleMicMute } = useGeminiLive();
+    
+    // 2. Vision Brain State
+    const { isVisionActive, startVisionTask } = useVisionBrain();
+
+    // 3. Gemini Live (Voice API) hook
+    const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage, isMuted, toggleMute, isMicMuted, toggleMicMute } = useGeminiLive(startVisionTask);
 
     React.useEffect(() => {
         if (window.electronAPI && window.electronAPI.getSystemPrompt) {

@@ -26,6 +26,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getSystemPrompt: () => ipcRenderer.invoke('get-system-prompt'),
     handleAITask: (aiResponse) => ipcRenderer.invoke('handle-ai-task', aiResponse),
     cleanAIText: (aiResponse) => ipcRenderer.invoke('clean-ai-text', aiResponse),
+    updateApiKeys: (keys) => ipcRenderer.send('update-api-keys', keys),
+    takeScreenshot: () => ipcRenderer.invoke('take-screenshot'),
 
     // Memory API
     getMemory: () => ipcRenderer.invoke('get-memory'),
