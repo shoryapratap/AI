@@ -22,6 +22,11 @@ This document highlights the user-facing features and core capabilities that hav
     *   *Smart Text Injection:* She can seamlessly type long strings of text automatically during a sequence.
     *   *Fail-safes:* Intelligent comma and plus parsing guarantees that the OS never gets stuck holding a key down.
 
+## 👁️ Vision Intelligence
+*   **Vision Brain Agent:** A secondary specialized Gemini Flash agent dedicated to executing visual tasks. It autonomously views the screen and plans GUI actions in a closed loop.
+*   **Advanced Mouse Control (`MOUSE_ACTION`):** The Vision Brain uses a structured 6-parameter mouse control API (`action | button | amount | start | end | direction`) to execute highly accurate `click`, `hold&release`, and `scroll` actions.
+*   **Action Acknowledgement System:** The Vision Brain strictly verifies the success/failure state of every executed physical command before proceeding to its next step, ensuring high accuracy while minimizing API rate limit usage.
+
 ## 🗓️ Memory & Scheduling
 *   **Schedules & Routines:** A flat-array JSON architecture (`schedules.json`) tracks events, routines, and anniversaries.
 *   **Interaction History:** Long-term conversation logging (`conversations.json`) keeps a persistent record of past AI actions and tasks completed.

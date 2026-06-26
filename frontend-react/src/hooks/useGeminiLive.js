@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import aiCommands from '../../../core/ai_commands.json';
 
-export function useGeminiLive(onDelegateVision = null) {
+export function useGeminiLive() {
     const [isConnected, setIsConnected] = useState(false);
     const [isAiTalking, setIsAiTalking] = useState(false);
     const [isUserTalking, setIsUserTalking] = useState(false);
@@ -231,13 +231,7 @@ export function useGeminiLive(onDelegateVision = null) {
                         const commandStr = commandsMatch[i][0];
                         console.log("Extracted command from text stream:", commandStr);
                         
-                        if (commandStr.includes('DELEGATE_VISION')) {
-                            const delegateMatch = /<COMMAND:\s*DELEGATE_VISION>\s*(.*?)\s*<\/COMMAND>/i.exec(commandStr);
-                            if (delegateMatch && onDelegateVision) {
-                                console.log(`[GeminiLive] Handing off to Vision Brain with task: ${delegateMatch[1]}`);
-                                onDelegateVision(delegateMatch[1]);
-                            }
-                        } else if (window.electronAPI && window.electronAPI.handleAITask) {
+                        if (window.electronAPI && window.electronAPI.handleAITask) {
                             window.electronAPI.handleAITask(commandStr);
                         }
                     }

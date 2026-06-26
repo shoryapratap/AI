@@ -27,7 +27,7 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
     const { isVisionActive, startVisionTask } = useVisionBrain();
 
     // 3. Gemini Live (Voice API) hook
-    const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage, isMuted, toggleMute, isMicMuted, toggleMicMute } = useGeminiLive(startVisionTask);
+    const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage, isMuted, toggleMute, isMicMuted, toggleMicMute } = useGeminiLive();
 
     React.useEffect(() => {
         if (window.electronAPI && window.electronAPI.getSystemPrompt) {

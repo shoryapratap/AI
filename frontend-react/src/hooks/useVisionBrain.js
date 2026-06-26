@@ -23,6 +23,8 @@ export function useVisionBrain() {
         let isComplete = false;
         let iteration = 0;
         const MAX_ITERATIONS = 10;
+        let lastCommand = '';
+        let lastActionStatus = '';
         
         let systemInstruction = "You are an autonomous GUI agent. You can see the screen and execute actions.";
         systemInstruction += "\nAvailable Commands:\n" + visionCommands.join('\n');
@@ -56,7 +58,7 @@ export function useVisionBrain() {
                 // 2. Ask Gemini 2.5 Flash
                 const chatPrompt = iteration === 1 
                     ? `The user requested: "${prompt}". Look at the screen and output your first command.`
-                    : `Previous action executed. Look at the screen and output your next command, or VISION_COMPLETE if done.`;
+                    : `Previous action: ${lastCommand} was executed with status: ${lastActionStatus}. Look at the new screenshot to verify. If the task is fully complete, output <COMMAND: VISION_COMPLETE></COMMAND>. Otherwise, output your next command.`;
                     
                 console.log(`[VisionBrain] Asking Gemini Vision...`);
                 const response = await ai.models.generateContent({
@@ -85,7 +87,9 @@ export function useVisionBrain() {
                     } else if (command === 'MOUSE_ACTION' || command === 'KEYBOARD_ACTION') {
                         // Forward the tag to the backend task manager
                         if (window.electronAPI.handleAITask) {
-                            await window.electronAPI.handleAITask(fullTag);
+                            const success = await window.electronAPI.handleAITask(fullTag);
+                            lastActionStatus = success ? "SUCCESS" : "FAILED";
+                            lastCommand = fullTag;
                             // Small delay after action before taking next screenshot
                             await new Promise(r => setTimeout(r, 1000));
                         }

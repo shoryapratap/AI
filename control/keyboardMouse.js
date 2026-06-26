@@ -112,74 +112,86 @@ async function keyboardAction(content) {
 async function mouseAction(content) {
     if (!content) return false;
     
-    // <COMMAND: MOUSE_ACTION> action | button | X,Y | amount </COMMAND>
+    // <COMMAND: MOUSE_ACTION> action | button | amount | start | end | direction </COMMAND>
     const parts = content.split('|').map(p => p.trim());
     const action = parts[0] ? parts[0].toLowerCase() : 'none';
     const button = parts[1] ? parts[1].toLowerCase() : 'none';
-    const coords = parts[2] ? parts[2].toLowerCase() : 'none';
-    const amountStr = parts[3] ? parts[3].toLowerCase() : 'none';
+    const amountStr = parts[2] ? parts[2].toLowerCase() : 'none';
+    const startStr = parts[3] ? parts[3].toLowerCase() : 'null';
+    const endStr = parts[4] ? parts[4].toLowerCase() : 'null';
+    const direction = parts[5] ? parts[5].toLowerCase() : 'null';
     
-    const amount = (amountStr !== 'none' && !isNaN(amountStr)) ? parseInt(amountStr) : 1;
+    const amount = (amountStr !== 'none' && amountStr !== 'null' && !isNaN(amountStr)) ? parseInt(amountStr) : 1;
     
-    console.log(`[KeyboardMouse] Mouse Action - Action: "${action}", Button: "${button}", Coords: "${coords}", Amount: ${amount}`);
+    console.log(`[KeyboardMouse] Mouse Action - Action: "${action}", Button: "${button}", Amount: ${amount}, Start: "${startStr}", End: "${endStr}", Direction: "${direction}"`);
     
-    try {
-        // Handle coordinate parsing for move actions
-        if (coords !== 'none' && coords.includes(',')) {
-            const [xStr, yStr] = coords.split(',');
+    // Helper to move mouse if valid coordinates are provided
+    const moveToCoord = (coordStr) => {
+        if (coordStr && coordStr !== 'null' && coordStr !== 'none' && coordStr.includes(',')) {
+            const [xStr, yStr] = coordStr.split(',');
             const x = parseInt(xStr.trim());
             const y = parseInt(yStr.trim());
             if (!isNaN(x) && !isNaN(y)) {
-                if (action === 'move') {
-                    robot.moveMouseSmooth(x, y);
-                } else {
-                    // For other actions, we can optionally move first
-                    robot.moveMouseSmooth(x, y);
-                }
+                robot.moveMouseSmooth(x, y);
+                return true;
             }
         }
-        
-        switch (action) {
-            case 'move':
-                // Handled above in coordinates check
-                break;
-            case 'click':
-                if (button !== 'none') {
-                    for (let i = 0; i < amount; i++) {
-                        robot.mouseClick(button);
-                        if (amount > 1 && i < amount - 1) {
-                            await new Promise(r => setTimeout(r, 100)); // small delay between rapid clicks
-                        }
+        return false;
+    };
+
+    try {
+        if (action === 'click') {
+            // 1. Move to start coords if provided
+            moveToCoord(startStr);
+            
+            // 2. Click the button the specified amount of times
+            if (button !== 'none' && button !== 'null') {
+                for (let i = 0; i < amount; i++) {
+                    robot.mouseClick(button);
+                    if (amount > 1 && i < amount - 1) {
+                        await new Promise(r => setTimeout(r, 100)); // small delay between rapid clicks
                     }
                 }
-                break;
-            case 'hold':
-                if (button !== 'none') robot.mouseToggle('down', button);
-                break;
-            case 'release':
-                if (button !== 'none') robot.mouseToggle('up', button);
-                break;
-            case 'scroll':
-                // robot.scrollMouse(x, y) - scroll in corresponding direction
-                if (button === 'up') {
-                    robot.scrollMouse(0, amount);
-                } else if (button === 'down') {
-                    robot.scrollMouse(0, -amount);
-                } else if (button === 'left') {
-                    robot.scrollMouse(-amount, 0);
-                } else if (button === 'right') {
-                    robot.scrollMouse(amount, 0);
-                }
-                break;
-            case 'getpos':
-                const pos = robot.getMousePos();
-                const screen = robot.getScreenSize();
-                console.log(`[KeyboardMouse] Current Pos: X=${pos.x}, Y=${pos.y} | Screen Size: ${screen.width}x${screen.height}`);
-                break;
-            default:
-                console.warn(`[KeyboardMouse] Unknown mouse action: ${action}`);
-                break;
+            }
+        } 
+        else if (action === 'hold&release') {
+            // 1. Move to start position
+            moveToCoord(startStr);
+            
+            // 2. Start holding
+            if (button !== 'none' && button !== 'null') {
+                robot.mouseToggle('down', button);
+            }
+            
+            // Small delay to ensure the OS registers the hold before moving
+            await new Promise(r => setTimeout(r, 100));
+            
+            // 3. Move to end position
+            moveToCoord(endStr);
+            
+            // 4. Release
+            if (button !== 'none' && button !== 'null') {
+                robot.mouseToggle('up', button);
+            }
         }
+        else if (action === 'scroll') {
+            // 1. Move to start position
+            moveToCoord(startStr);
+            
+            // 2. Scroll up or down
+            if (direction === 'up') {
+                robot.scrollMouse(0, amount);
+            } else if (direction === 'down') {
+                robot.scrollMouse(0, -amount);
+            } else {
+                console.warn(`[KeyboardMouse] Invalid scroll direction: ${direction}`);
+            }
+        } 
+        else {
+            console.warn(`[KeyboardMouse] Unknown mouse action: ${action}`);
+            return false;
+        }
+        
         return true;
     } catch (error) {
         console.error(`[KeyboardMouse] Error in mouseAction:`, error);
