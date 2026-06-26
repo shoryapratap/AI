@@ -27,7 +27,7 @@ async function handleAIOutput(aiResponse) {
         ];
         
         const keyboardCommands = [
-            'KEYBOARD_ACTION', 'CLICK'
+            'KEYBOARD_ACTION', 'MOUSE_ACTION'
         ];
 
         if (appCommands.includes(task)) {

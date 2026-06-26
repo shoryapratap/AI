@@ -109,10 +109,82 @@ async function keyboardAction(content) {
     }
 }
 
-async function click() {
-    console.log(`[KeyboardMouse] Placeholder: executing click`);
-    // Implementation will be added later
-    return true;
+async function mouseAction(content) {
+    if (!content) return false;
+    
+    // <COMMAND: MOUSE_ACTION> action | button | X,Y | amount </COMMAND>
+    const parts = content.split('|').map(p => p.trim());
+    const action = parts[0] ? parts[0].toLowerCase() : 'none';
+    const button = parts[1] ? parts[1].toLowerCase() : 'none';
+    const coords = parts[2] ? parts[2].toLowerCase() : 'none';
+    const amountStr = parts[3] ? parts[3].toLowerCase() : 'none';
+    
+    const amount = (amountStr !== 'none' && !isNaN(amountStr)) ? parseInt(amountStr) : 1;
+    
+    console.log(`[KeyboardMouse] Mouse Action - Action: "${action}", Button: "${button}", Coords: "${coords}", Amount: ${amount}`);
+    
+    try {
+        // Handle coordinate parsing for move actions
+        if (coords !== 'none' && coords.includes(',')) {
+            const [xStr, yStr] = coords.split(',');
+            const x = parseInt(xStr.trim());
+            const y = parseInt(yStr.trim());
+            if (!isNaN(x) && !isNaN(y)) {
+                if (action === 'move') {
+                    robot.moveMouseSmooth(x, y);
+                } else {
+                    // For other actions, we can optionally move first
+                    robot.moveMouseSmooth(x, y);
+                }
+            }
+        }
+        
+        switch (action) {
+            case 'move':
+                // Handled above in coordinates check
+                break;
+            case 'click':
+                if (button !== 'none') {
+                    for (let i = 0; i < amount; i++) {
+                        robot.mouseClick(button);
+                        if (amount > 1 && i < amount - 1) {
+                            await new Promise(r => setTimeout(r, 100)); // small delay between rapid clicks
+                        }
+                    }
+                }
+                break;
+            case 'hold':
+                if (button !== 'none') robot.mouseToggle('down', button);
+                break;
+            case 'release':
+                if (button !== 'none') robot.mouseToggle('up', button);
+                break;
+            case 'scroll':
+                // robot.scrollMouse(x, y) - scroll in corresponding direction
+                if (button === 'up') {
+                    robot.scrollMouse(0, amount);
+                } else if (button === 'down') {
+                    robot.scrollMouse(0, -amount);
+                } else if (button === 'left') {
+                    robot.scrollMouse(-amount, 0);
+                } else if (button === 'right') {
+                    robot.scrollMouse(amount, 0);
+                }
+                break;
+            case 'getpos':
+                const pos = robot.getMousePos();
+                const screen = robot.getScreenSize();
+                console.log(`[KeyboardMouse] Current Pos: X=${pos.x}, Y=${pos.y} | Screen Size: ${screen.width}x${screen.height}`);
+                break;
+            default:
+                console.warn(`[KeyboardMouse] Unknown mouse action: ${action}`);
+                break;
+        }
+        return true;
+    } catch (error) {
+        console.error(`[KeyboardMouse] Error in mouseAction:`, error);
+        return false;
+    }
 }
 
 async function handleKeyboardCommand(task, content) {
@@ -122,9 +194,9 @@ async function handleKeyboardCommand(task, content) {
             executed = await keyboardAction(content);
             if (executed) console.log(`[KeyboardMouse] Successfully executed keyboard action.`);
             break;
-        case 'CLICK':
-            executed = await click();
-            if (executed) console.log(`[KeyboardMouse] Successfully clicked.`);
+        case 'MOUSE_ACTION':
+            executed = await mouseAction(content);
+            if (executed) console.log(`[KeyboardMouse] Successfully executed mouse action.`);
             break;
     }
     return executed;
@@ -133,5 +205,5 @@ async function handleKeyboardCommand(task, content) {
 module.exports = {
     handleKeyboardCommand,
     keyboardAction,
-    click
+    mouseAction
 };

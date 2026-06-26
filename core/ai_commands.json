@@ -8,5 +8,5 @@
     "To remove apps from a group: <COMMAND: REMOVE_APP_FROM_GROUP>GroupName|App1,App2</COMMAND>",
     "To remove a group completely: <COMMAND: REMOVE_GROUP>GroupName</COMMAND>",
     "To perform keyboard actions: <COMMAND: KEYBOARD_ACTION>holdKey | iterations | keyCombo | text</COMMAND> (Use 'none' for unused parts. ALWAYS use '+' to separate multiple keys, e.g. 'ctrl+c' or 'up+left'. Never use commas. e.g. <COMMAND: KEYBOARD_ACTION>none | 1 | enter | youtube.com</COMMAND>, <COMMAND: KEYBOARD_ACTION>win | 1 | up+left | none</COMMAND>, <COMMAND: KEYBOARD_ACTION>none | 1 | none | hello world</COMMAND>)",
-    "To click the mouse: <COMMAND: CLICK></COMMAND>"
+    "To perform mouse actions: <COMMAND: MOUSE_ACTION> action | button | X,Y | amount </COMMAND> (Actions: move, click, hold, release, scroll, getPos. Button: left, right, middle, up, down, none. e.g. <COMMAND: MOUSE_ACTION> click | left | none | 2 </COMMAND>, <COMMAND: MOUSE_ACTION> move | none | 960,540 | none </COMMAND>, <COMMAND: MOUSE_ACTION> scroll | down | none | 5 </COMMAND>)"
 ]
