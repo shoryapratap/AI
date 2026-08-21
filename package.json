@@ -25,8 +25,7 @@
       "output": "dist"
     },
     "win": {
-      "target": "portable",
-      "icon": "frontend-react/dist/assets/icon.ico"
+      "target": "nsis"
     },
     "files": [
       "main.js",
