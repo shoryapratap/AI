@@ -27,9 +27,8 @@ let tray = null;
 let isQuitting = false;
 
 function createWindow() {
-    const icon = nativeImage.createFromPath(
-        path.join(__dirname, 'frontend-react', 'dist', 'assets', 'icon.ico')
-    );
+    // Removed icon temporarily
+    const icon = nativeImage.createEmpty();
 
     mainWindow = new BrowserWindow({
         width: 1200,
@@ -132,7 +131,7 @@ ipcMain.handle('launch-app', async (event, appPath) => {
 });
 
 ipcMain.handle('save-app-groups', (event, groups) => {
-    const groupsPath = path.join(__dirname, 'memory', 'app_groups.json');
+    const groupsPath = path.join(app.getPath('userData'), 'memory', 'app_groups.json');
     try {
         if (!fs.existsSync(path.dirname(groupsPath))) {
             fs.mkdirSync(path.dirname(groupsPath), { recursive: true });
@@ -146,10 +145,14 @@ ipcMain.handle('save-app-groups', (event, groups) => {
 });
 
 ipcMain.handle('get-app-groups', () => {
-    const groupsPath = path.join(__dirname, 'memory', 'app_groups.json');
+    const userGroupsPath = path.join(app.getPath('userData'), 'memory', 'app_groups.json');
+    const defaultGroupsPath = path.join(__dirname, 'memory', 'app_groups.json');
+    
     try {
-        if (fs.existsSync(groupsPath)) {
-            return JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
+        if (fs.existsSync(userGroupsPath)) {
+            return JSON.parse(fs.readFileSync(userGroupsPath, 'utf8'));
+        } else if (fs.existsSync(defaultGroupsPath)) {
+            return JSON.parse(fs.readFileSync(defaultGroupsPath, 'utf8'));
         }
     } catch (e) {
         console.error('Error reading app groups:', e);
@@ -158,10 +161,13 @@ ipcMain.handle('get-app-groups', () => {
 });
 
 ipcMain.handle('get-memory', () => {
-    const memPath = path.join(__dirname, 'memory', 'permanent_details.json');
+    const userMemPath = path.join(app.getPath('userData'), 'memory', 'permanent_details.json');
+    const defaultMemPath = path.join(__dirname, 'memory', 'permanent_details.json');
     try {
-        if (fs.existsSync(memPath)) {
-            return JSON.parse(fs.readFileSync(memPath, 'utf8'));
+        if (fs.existsSync(userMemPath)) {
+            return JSON.parse(fs.readFileSync(userMemPath, 'utf8'));
+        } else if (fs.existsSync(defaultMemPath)) {
+            return JSON.parse(fs.readFileSync(defaultMemPath, 'utf8'));
         }
     } catch (e) {
         console.error('Error reading memory:', e);
@@ -170,7 +176,7 @@ ipcMain.handle('get-memory', () => {
 });
 
 ipcMain.handle('save-memory', (event, data) => {
-    const memPath = path.join(__dirname, 'memory', 'permanent_details.json');
+    const memPath = path.join(app.getPath('userData'), 'memory', 'permanent_details.json');
     try {
         if (!fs.existsSync(path.dirname(memPath))) {
             fs.mkdirSync(path.dirname(memPath), { recursive: true });
@@ -192,7 +198,10 @@ ipcMain.handle('get-system-prompt', () => {
         }
 
         // Dynamically append available groups so AI knows what groups exist
-        const groupsPath = path.join(__dirname, 'memory', 'app_groups.json');
+        const userGroupsPath = path.join(app.getPath('userData'), 'memory', 'app_groups.json');
+        const defaultGroupsPath = path.join(__dirname, 'memory', 'app_groups.json');
+        
+        let groupsPath = fs.existsSync(userGroupsPath) ? userGroupsPath : defaultGroupsPath;
         if (fs.existsSync(groupsPath)) {
             try {
                 const groups = JSON.parse(fs.readFileSync(groupsPath, 'utf8'));
@@ -242,8 +251,8 @@ ipcMain.handle('take-screenshot', async () => {
 app.whenReady().then(() => {
     createWindow();
     
-    const iconPath = path.join(__dirname, 'frontend-react', 'dist', 'assets', 'icon.ico');
-    const trayIcon = nativeImage.createFromPath(iconPath);
+    // Temporarily use empty image for tray
+    const trayIcon = nativeImage.createEmpty();
     tray = new Tray(trayIcon);
     
     const contextMenu = Menu.buildFromTemplate([

@@ -30,6 +30,9 @@
     "files": [
       "main.js",
       "preload.js",
+      "control/**/*",
+      "core/**/*",
+      "memory/**/*",
       "frontend-react/dist/**/*"
     ]
   },

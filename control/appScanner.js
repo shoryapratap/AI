@@ -5,8 +5,13 @@ const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
 
+const memoryDir = path.join(app.getPath('userData'), 'memory');
+if (!fs.existsSync(memoryDir)) {
+    fs.mkdirSync(memoryDir, { recursive: true });
+}
+
 async function scanApps(forceFullScan = false) {
-    const cachePath = path.join(__dirname, '..', 'memory', 'scanned_apps_cache.json');
+    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
     let cachedApps = [];
     if (!forceFullScan) {
         try {
@@ -210,7 +215,7 @@ async function launchAppByPath(appPath) {
 }
 
 async function launchAppByName(appName) {
-    const cachePath = path.join(__dirname, '..', 'memory', 'scanned_apps_cache.json');
+    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
     try {
         if (!fs.existsSync(cachePath)) {
             console.log(`[AI Launch] App cache not found.`);
@@ -238,7 +243,7 @@ async function launchAppByName(appName) {
 }
 
 async function launchGroupByName(groupName) {
-    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    const groupsPath = path.join(memoryDir, 'app_groups.json');
     try {
         if (!fs.existsSync(groupsPath)) {
             console.log(`[AI Launch] Groups file not found.`);
@@ -295,7 +300,7 @@ async function closeAppByPath(appPath, appName) {
 }
 
 async function closeAppByName(appName) {
-    const cachePath = path.join(__dirname, '..', 'memory', 'scanned_apps_cache.json');
+    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
     try {
         if (!fs.existsSync(cachePath)) {
             console.log(`[AI Close] App cache not found.`);
@@ -323,7 +328,7 @@ async function closeAppByName(appName) {
 }
 
 async function closeGroupByName(groupName) {
-    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    const groupsPath = path.join(memoryDir, 'app_groups.json');
     try {
         if (!fs.existsSync(groupsPath)) {
             return false;
@@ -370,8 +375,8 @@ async function _resolveApps(appNamesArray, cachedApps) {
 }
 
 async function createGroupByName(groupName, appNamesArray) {
-    const cachePath = path.join(__dirname, '..', 'memory', 'scanned_apps_cache.json');
-    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
+    const groupsPath = path.join(memoryDir, 'app_groups.json');
     
     try {
         if (!fs.existsSync(cachePath)) {
@@ -397,8 +402,8 @@ async function createGroupByName(groupName, appNamesArray) {
 }
 
 async function addAppsToGroup(groupName, appNamesArray) {
-    const cachePath = path.join(__dirname, '..', 'memory', 'scanned_apps_cache.json');
-    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
+    const groupsPath = path.join(memoryDir, 'app_groups.json');
     
     try {
         if (!fs.existsSync(cachePath)) {
@@ -435,7 +440,7 @@ async function addAppsToGroup(groupName, appNamesArray) {
 }
 
 async function removeAppsFromGroup(groupName, appNamesArray) {
-    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    const groupsPath = path.join(memoryDir, 'app_groups.json');
     
     try {
         if (!fs.existsSync(groupsPath)) {
@@ -472,7 +477,7 @@ async function removeAppsFromGroup(groupName, appNamesArray) {
 }
 
 async function removeGroupByName(groupName) {
-    const groupsPath = path.join(__dirname, '..', 'memory', 'app_groups.json');
+    const groupsPath = path.join(memoryDir, 'app_groups.json');
     
     try {
         if (!fs.existsSync(groupsPath)) {
