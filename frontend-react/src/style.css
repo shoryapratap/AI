@@ -1,11 +1,11 @@
 /* Emma AI - Premium Conversational & Settings Stylesheet */
 
 :root {
-    --bg-black: #030307;
-    --bg-capsule: #0e0e13;
-    --bg-capsule-hover: #16161e;
-    --border-color: rgba(255, 255, 255, 0.05);
-    --border-hover: rgba(138, 100, 255, 0.3);
+    --bg-black: #1c1c1e;
+    --bg-capsule: #1c1c1e;
+    --bg-capsule-hover: #1c1c1e;
+    --border-color: transparent;
+    --border-hover: transparent;
     
     --text-primary: #ffffff;
     --text-secondary: #e3e3e3;
@@ -13,15 +13,51 @@
     
     --font-sans: 'Plus Jakarta Sans', sans-serif;
     
-    /* Brand accent colors - extracted from the Emma icon */
-    --accent-blue:    #38B6FF;
-    --accent-purple:  #7B4FFF;
-    --accent-magenta: #FF2D9A;
+    /* Brand accent colors - Neumorphic Purple */
+    --accent-blue:    #8a2be2;
+    --accent-purple:  #8a2be2;
+    --accent-magenta: #9b51e0;
     
     /* Variable backing glow colors */
-    --glow-color-1: rgba(100, 60, 255, 0.55);
-    --glow-color-2: rgba(56, 182, 255, 0.18);
+    --glow-color-1: rgba(138, 43, 226, 0.15);
+    --glow-color-2: rgba(155, 81, 224, 0.05);
+
+    /* Neumorphic Shadows */
+    --neu-shadow-raised: 6px 6px 12px #0e0e0f, -6px -6px 12px #2a2a2d;
+    --neu-shadow-raised-sm: 4px 4px 8px #0e0e0f, -4px -4px 8px #2a2a2d;
+    --neu-shadow-pressed: inset 6px 6px 12px #0e0e0f, inset -6px -6px 12px #2a2a2d;
+    --neu-shadow-pressed-sm: inset 4px 4px 8px #0e0e0f, inset -4px -4px 8px #2a2a2d;
 }
+
+/* Neumorphic Utility Classes */
+.neu-raised {
+    background: var(--bg-black);
+    box-shadow: var(--neu-shadow-raised);
+    border: none;
+    border-radius: 12px;
+}
+
+.neu-raised-sm {
+    background: var(--bg-black);
+    box-shadow: var(--neu-shadow-raised-sm);
+    border: none;
+    border-radius: 8px;
+}
+
+.neu-pressed {
+    background: var(--bg-black);
+    box-shadow: var(--neu-shadow-pressed);
+    border: none;
+    border-radius: 12px;
+}
+
+.neu-pressed-sm {
+    background: var(--bg-black);
+    box-shadow: var(--neu-shadow-pressed-sm);
+    border: none;
+    border-radius: 8px;
+}
+
 
 * {
     box-sizing: border-box;
@@ -68,13 +104,10 @@ body.electron .workspace-container {
     justify-content: space-between;
     z-index: 1000;
 
-    /* Frosted glass surface */
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04),
-                0 8px 32px rgba(0, 0, 0, 0.45);
+    /* Neumorphic Solid Navbar */
+    background: var(--bg-black);
+    border-bottom: none;
+    box-shadow: 0 4px 12px #0e0e0f;
 
     /* Entrance slide-down animation */
     animation: navSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -142,9 +175,10 @@ body.electron .workspace-container {
     display: flex;
     gap: 4px;
     padding: 4px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--bg-black);
+    border: none;
     border-radius: 32px;
+    box-shadow: var(--neu-shadow-pressed-sm);
 }
 
 .nav-link {
@@ -406,7 +440,7 @@ div[style*="overflowY"]::-webkit-scrollbar-thumb:hover {
     left: 40px;
     top: 250px;
     width: 400px;
-    bottom: 150px; /* Aligned with center hub bottom */
+    bottom: 150px;
     height: auto;
     max-height: none;
     padding: 20px;
@@ -415,14 +449,11 @@ div[style*="overflowY"]::-webkit-scrollbar-thumb:hover {
     flex-direction: column;
     gap: 16px;
     
-    /* Ultra Glassmorphic effect */
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01)), rgba(5, 5, 8, 0.15);
-    backdrop-filter: blur(40px) saturate(150%);
-    -webkit-backdrop-filter: blur(40px) saturate(150%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    /* Neumorphic effect */
+    background: var(--bg-black);
+    border: none;
     border-radius: 20px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 
-                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+    box-shadow: var(--neu-shadow-raised);
     
     /* hide scrollbar */
     scrollbar-width: none;
@@ -585,7 +616,7 @@ div[style*="overflowY"]::-webkit-scrollbar-thumb:hover {
     z-index: 2;
     position: relative;
     background-color: var(--bg-capsule);
-    border: 1px solid var(--border-color);
+    border: none;
     border-radius: 32px;
     padding: 10px 16px 10px 12px;
     display: flex;
@@ -593,32 +624,26 @@ div[style*="overflowY"]::-webkit-scrollbar-thumb:hover {
     gap: 12px;
     width: 100%;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.input-capsule:hover {
-    background-color: var(--bg-capsule-hover);
-    border-color: var(--border-hover);
+    box-shadow: var(--neu-shadow-pressed);
 }
 
 .input-capsule:focus-within {
-    background-color: var(--bg-capsule-hover);
-    border-color: rgba(123, 79, 255, 0.4);
-    box-shadow: 0 0 0 1px rgba(123, 79, 255, 0.15),
-                0 0 20px rgba(100, 60, 255, 0.08);
+    box-shadow: inset 8px 8px 16px #0e0e0f, inset -8px -8px 16px #2a2a2d;
 }
 
 .capsule-btn {
-    background: transparent;
+    background: var(--bg-black);
     border: none;
-    color: var(--text-secondary);
-    width: 38px;
-    height: 38px;
+    color: var(--accent-purple);
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: var(--neu-shadow-raised-sm);
 }
 
 .capsule-btn svg {
@@ -627,7 +652,7 @@ div[style*="overflowY"]::-webkit-scrollbar-thumb:hover {
 }
 
 .capsule-btn:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: var(--neu-shadow-pressed-sm);
     color: var(--text-primary);
 }
 
@@ -706,20 +731,19 @@ div[style*="overflowY"]::-webkit-scrollbar-thumb:hover {
 }
 
 .settings-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), transparent), 
-                rgba(19, 19, 20, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--bg-black);
+    border: none;
     border-radius: 12px;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    transition: border-color 0.25s ease, transform 0.25s ease;
+    transition: transform 0.25s ease;
+    box-shadow: var(--neu-shadow-raised);
 }
 
 .settings-card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(1px);
+    box-shadow: var(--neu-shadow-pressed);
 }
 
 .settings-card .card-header {
