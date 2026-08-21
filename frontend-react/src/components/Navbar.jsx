@@ -24,7 +24,7 @@ const Navbar = ({ activeView, setActiveView }) => {
                 </ul>
             </nav>
             <div className="nav-right">
-                <div className="user-profile-badge">S</div>
+                <div className="user-profile-badge">p</div>
             </div>
         </header>
     );

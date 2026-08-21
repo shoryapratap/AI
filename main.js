@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, nativeImage, Tray, Menu } = require('electron');
 const path = require('path');
 const { scanApps, launchAppByPath } = require('./control/appScanner');
 const { handleAIOutput, cleanAIOutput } = require('./core/taskManager');
@@ -23,6 +23,8 @@ app.commandLine.appendSwitch('log-level', '3');
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true';
 
 let mainWindow;
+let tray = null;
+let isQuitting = false;
 
 function createWindow() {
     const icon = nativeImage.createFromPath(
@@ -69,7 +71,7 @@ function createWindow() {
             { role: 'selectAll' }
         ]
     }];
-    const { Menu } = require('electron');
+    // const { Menu } = require('electron'); // Already required at top
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 
     // Open DevTools in dev mode
@@ -78,6 +80,14 @@ function createWindow() {
     // Log renderer console messages to terminal
     mainWindow.webContents.on('console-message', (event, level, message, line, sourceId) => {
         console.log(`[Renderer] ${message}`);
+    });
+
+    mainWindow.on('close', (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            mainWindow.hide();
+            return false;
+        }
     });
 
     mainWindow.on('closed', () => {
@@ -105,7 +115,7 @@ ipcMain.on('win-maximize', () => {
 });
 
 ipcMain.on('win-close', () => {
-    if (mainWindow) mainWindow.close();
+    if (mainWindow) mainWindow.hide();
 });
 
 ipcMain.handle('scan-apps', async (event, forceFullScan) => {
@@ -229,10 +239,41 @@ ipcMain.handle('take-screenshot', async () => {
 });
 
 // App lifecycle
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    createWindow();
+    
+    const iconPath = path.join(__dirname, 'frontend-react', 'dist', 'assets', 'icon.ico');
+    const trayIcon = nativeImage.createFromPath(iconPath);
+    tray = new Tray(trayIcon);
+    
+    const contextMenu = Menu.buildFromTemplate([
+        { label: 'Show Emma AI', click: () => {
+            if (mainWindow) mainWindow.show();
+            else createWindow();
+        }},
+        { label: 'Quit', click: () => {
+            isQuitting = true;
+            app.quit();
+        }}
+    ]);
+    
+    tray.setToolTip('Emma AI');
+    tray.setContextMenu(contextMenu);
+    
+    tray.on('click', () => {
+        if (mainWindow) {
+            mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+        } else {
+            createWindow();
+        }
+    });
+});
 
 app.on('window-all-closed', () => {
-    app.quit();
+    // Stay in tray when windows are closed
+    if (isQuitting) {
+        app.quit();
+    }
 });
 
 app.on('activate', () => {
