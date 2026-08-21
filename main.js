@@ -212,6 +212,18 @@ ipcMain.handle('get-system-prompt', () => {
             } catch (err) {}
         }
 
+        // Dynamically append available apps so AI knows what apps exist
+        const userAppsPath = path.join(app.getPath('userData'), 'memory', 'scanned_apps_cache.json');
+        if (fs.existsSync(userAppsPath)) {
+            try {
+                const apps = JSON.parse(fs.readFileSync(userAppsPath, 'utf8'));
+                if (apps && apps.length > 0) {
+                    const appNames = apps.map(a => a.name).join(', ');
+                    promptText += `\n\n[SYSTEM INFO]\nThe following apps are installed and available to launch: ${appNames}.\nTo launch any of these apps, use <COMMAND: LAUNCH_APP>AppName</COMMAND>. To close them, use <COMMAND: CLOSE_APP>AppName</COMMAND>.`;
+                }
+            } catch (err) {}
+        }
+
         return promptText;
     } catch (e) {
         console.error('Error reading system prompt:', e);

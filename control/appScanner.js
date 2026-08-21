@@ -6,6 +6,22 @@ const os = require('os');
 const crypto = require('crypto');
 
 const memoryDir = path.join(app.getPath('userData'), 'memory');
+
+async function getCachedApps() {
+    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
+    if (!fs.existsSync(cachePath)) {
+        console.log(`[App Scanner] Cache not found, running background scan...`);
+        await scanApps();
+    }
+    if (fs.existsSync(cachePath)) {
+        try {
+            return JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+        } catch(e) {
+            console.error('Error parsing app cache:', e);
+        }
+    }
+    return [];
+}
 if (!fs.existsSync(memoryDir)) {
     fs.mkdirSync(memoryDir, { recursive: true });
 }
@@ -131,8 +147,6 @@ $apps | ConvertTo-Json -Compress
                 const uniquePaths = new Set();
                 const uniqueNames = new Set();
                 
-                require('fs').writeFileSync('c:/Coding/Projects/AI/test_explorer_debug.json', JSON.stringify(rawApps.filter(a => a && a.Name && a.Name.toLowerCase().includes('explorer')), null, 2));
-
                 for (const appItem of rawApps) {
                     if (!appItem || !appItem.Name || !appItem.Path) continue;
                     
@@ -215,13 +229,12 @@ async function launchAppByPath(appPath) {
 }
 
 async function launchAppByName(appName) {
-    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
     try {
-        if (!fs.existsSync(cachePath)) {
-            console.log(`[AI Launch] App cache not found.`);
+        const cachedApps = await getCachedApps();
+        if (!cachedApps || cachedApps.length === 0) {
+            console.log(`[AI Launch] App cache is empty or could not be generated.`);
             return false;
         }
-        const cachedApps = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
         const searchName = appName.toLowerCase();
         
         let targetApp = cachedApps.find(a => a.name.toLowerCase() === searchName);
@@ -300,13 +313,12 @@ async function closeAppByPath(appPath, appName) {
 }
 
 async function closeAppByName(appName) {
-    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
     try {
-        if (!fs.existsSync(cachePath)) {
-            console.log(`[AI Close] App cache not found.`);
+        const cachedApps = await getCachedApps();
+        if (!cachedApps || cachedApps.length === 0) {
+            console.log(`[AI Close] App cache is empty.`);
             return false;
         }
-        const cachedApps = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
         const searchName = appName.toLowerCase();
         
         let targetApp = cachedApps.find(a => a.name.toLowerCase() === searchName);
@@ -375,15 +387,14 @@ async function _resolveApps(appNamesArray, cachedApps) {
 }
 
 async function createGroupByName(groupName, appNamesArray) {
-    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
     const groupsPath = path.join(memoryDir, 'app_groups.json');
     
     try {
-        if (!fs.existsSync(cachePath)) {
+        const cachedApps = await getCachedApps();
+        if (!cachedApps || cachedApps.length === 0) {
             console.log(`[AI Launch] App cache not found. Cannot create group.`);
             return false;
         }
-        const cachedApps = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
         let groups = fs.existsSync(groupsPath) ? JSON.parse(fs.readFileSync(groupsPath, 'utf8')) : [];
 
         const resolvedApps = await _resolveApps(appNamesArray, cachedApps);
@@ -402,16 +413,15 @@ async function createGroupByName(groupName, appNamesArray) {
 }
 
 async function addAppsToGroup(groupName, appNamesArray) {
-    const cachePath = path.join(memoryDir, 'scanned_apps_cache.json');
     const groupsPath = path.join(memoryDir, 'app_groups.json');
     
     try {
-        if (!fs.existsSync(cachePath)) {
+        const cachedApps = await getCachedApps();
+        if (!cachedApps || cachedApps.length === 0) {
             console.log(`[AI Launch] App cache not found. Cannot add apps to group.`);
             return false;
         }
         let groups = fs.existsSync(groupsPath) ? JSON.parse(fs.readFileSync(groupsPath, 'utf8')) : [];
-        const cachedApps = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
 
         let targetGroup = groups.find(g => g.name.toLowerCase() === groupName.toLowerCase());
         if (!targetGroup) {

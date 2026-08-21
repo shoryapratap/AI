@@ -39,6 +39,7 @@
   "dependencies": {
     "electron-context-menu": "^4.1.2",
     "robotjs": "^0.7.1",
-    "screenshot-desktop": "^1.15.4"
+    "screenshot-desktop": "^1.15.4",
+    "ws": "^8.21.3"
   }
 }

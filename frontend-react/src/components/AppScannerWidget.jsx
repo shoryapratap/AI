@@ -38,9 +38,7 @@ const AppScannerWidget = ({ onClose }) => {
     }, []);
 
     useEffect(() => {
-        if (scannedApps.length === 0) {
-            handleScan(false);
-        }
+        handleScan(false);
     }, []);
 
     useEffect(() => {
