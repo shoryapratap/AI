@@ -24,7 +24,7 @@ export function useGeminiLive() {
 
     const [error, setError] = useState(null);
     const [messages, setMessages] = useState([
-        { role: 'ai', content: 'Hello! I am Emma. How can I help you control your PC today?' }
+        { role: 'ai', content: 'Hello! I am Omen. How can I help you control your PC today?' }
     ]);
 
     const wsRef = useRef(null);
@@ -313,7 +313,7 @@ export function useGeminiLive() {
                             speechConfig: {
                                 voiceConfig: {
                                     prebuiltVoiceConfig: {
-                                        voiceName: "Aoede"
+                                        voiceName: "Fenrir"
                                     }
                                 }
                             }

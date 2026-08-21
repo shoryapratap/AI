@@ -1,7 +1,7 @@
 {
-  "name": "emma-ai",
+  "name": "omen-ai",
   "version": "1.0.0",
-  "description": "Emma AI — Your Intelligent Windows Workspace",
+  "description": "Omen AI — Your Intelligent Windows Workspace",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,7 +9,7 @@
     "electron:dev": "concurrently \"npm run react:dev\" \"wait-on http://localhost:5173 && electron .\"",
     "build": "electron-builder --win --x64"
   },
-  "author": "Emma AI",
+  "author": "Omen AI",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^9.2.1",
@@ -19,13 +19,14 @@
     "wait-on": "^9.0.10"
   },
   "build": {
-    "appId": "com.emma.ai",
-    "productName": "Emma AI",
+    "appId": "com.omen.ai",
+    "productName": "Omen AI",
     "directories": {
       "output": "dist"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "frontend-react/public/omenicon.ico"
     },
     "files": [
       "main.js",

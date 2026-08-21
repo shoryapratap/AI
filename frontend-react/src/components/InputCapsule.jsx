@@ -37,7 +37,7 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
         alert("File Attachment System: Select documents or workspace files for context.");
     };
 
-    const modelName = activeModel === 'flash' ? 'Emma-Flash' : (activeModel === 'pro' ? 'Emma-Pro' : 'Emma-Ultra');
+    const modelName = activeModel === 'flash' ? 'Omen-Flash' : (activeModel === 'pro' ? 'Omen-Pro' : 'Omen-Ultra');
 
     return (
         <div className="capsule-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -49,7 +49,7 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
                 <input 
                     type="text" 
                     id="chat-input" 
-                    placeholder={isMicActive ? 'Gemini Live Voice is active...' : 'Ask Emma...'}
+                    placeholder={isMicActive ? 'Gemini Live Voice is active...' : 'Ask Omen...'}
                     autoComplete="off"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}

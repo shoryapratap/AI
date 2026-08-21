@@ -1,226 +1,217 @@
-import React, { useEffect, useRef } from 'react';
-import * as THREE from 'three';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import React from 'react';
 
 const VoiceOrb = ({ isUserTalking, isAiTalking }) => {
-    const mountRef = useRef(null);
-    const audioLevelRef = useRef(0);
-    const targetAudioLevelRef = useRef(0);
+  const isTalking = isUserTalking || isAiTalking;
 
-    useEffect(() => {
-        if (!mountRef.current) return;
+  return (
+    <button className="organic-orb-container omen-orb-btn">
+      <div className="omen-orb-container-inner">
+        <div className="omen-orb-svg-wrapper">
+          <svg
+            className="omen-orb-svg-bg"
+            viewBox="0 0 260 260"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <radialGradient id="g1" cx="30%" cy="30%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9"></stop>
+                <stop offset="20%" stopColor="#6ee7b7" stopOpacity="0.28"></stop>
+                <stop offset="70%" stopColor="#0b1020" stopOpacity="0.02"></stop>
+              </radialGradient>
+              <filter id="blur" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="10" result="b"></feGaussianBlur>
+                <feBlend in="SourceGraphic" in2="b"></feBlend>
+              </filter>
+            </defs>
 
-        const container = mountRef.current;
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        
-        container.style.pointerEvents = 'none'; // Ensure canvas never blocks clicks
+            <circle
+              cx="130"
+              cy="130"
+              r="90"
+              fill="url(#g1)"
+              opacity="0.9"
+              filter="url(#blur)"
+            ></circle>
 
-        // SCENE & CAMERA
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-        camera.position.z = 9;
+            <g opacity="0.6" transform="translate(130,130)">
+              <ellipse
+                cx="0"
+                cy="0"
+                rx="110"
+                ry="110"
+                fill="none"
+                stroke="#60a5fa"
+                strokeOpacity="0.06"
+                strokeWidth="2"
+              >
+                <animateTransform
+                  attributeName="transform"
+                  type="rotate"
+                  dur="18s"
+                  repeatCount="indefinite"
+                ></animateTransform>
+              </ellipse>
+            </g>
 
-        const renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: true
-        });
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        
-        container.appendChild(renderer.domElement);
+            <g opacity="0.5" transform="translate(130,130)">
+              <ellipse
+                cx="0"
+                cy="0"
+                rx="85"
+                ry="85"
+                fill="none"
+                stroke="#6ee7b7"
+                strokeOpacity="0.05"
+                strokeWidth="2"
+              >
+                <animateTransform
+                  attributeName="transform"
+                  type="rotate"
+                  dur="10s"
+                  repeatCount="indefinite"
+                ></animateTransform>
+              </ellipse>
+            </g>
 
-        // REALISTIC SHINE (RoomEnvironment)
-        const pmremGenerator = new THREE.PMREMGenerator(renderer);
-        scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+            <g transform="translate(130,130)" opacity="0.4">
+              <circle
+                r="30"
+                fill="none"
+                stroke="#6ee7b7"
+                strokeOpacity="0.08"
+                strokeWidth="2"
+              ></circle>
+              <circle
+                r="20"
+                fill="none"
+                stroke="#60a5fa"
+                strokeOpacity="0.06"
+                strokeWidth="1.6"
+              ></circle>
+            </g>
+          </svg>
 
-        // SCENE LIGHTS
-        const light1 = new THREE.PointLight(0xff0055, 50);
-        scene.add(light1);
+          <div className={`omen-orb-ring-1 ${isTalking ? 'omen-orb-pulse' : ''}`}>
+            <div className="omen-orb-core">
+              <svg
+                className="omen-orb-equalizer"
+                viewBox="0 0 100 60"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  x="10"
+                  y="10"
+                  width="8"
+                  height="40"
+                  rx="2"
+                  fill="url(#barGrad)"
+                  transformOrigin="14 40"
+                >
+                  <animateTransform
+                    attributeName="transform"
+                    type="scale"
+                    values="1 0.3;1 1;1 0.3"
+                    dur="1.2s"
+                    repeatCount="indefinite"
+                    begin="-0.9s"
+                  ></animateTransform>
+                </rect>
+                <rect
+                  x="26"
+                  y="16"
+                  width="8"
+                  height="34"
+                  rx="2"
+                  fill="url(#barGrad)"
+                  transformOrigin="30 40"
+                >
+                  <animateTransform
+                    attributeName="transform"
+                    type="scale"
+                    values="1 0.35;1 1;1 0.35"
+                    dur="1.2s"
+                    repeatCount="indefinite"
+                    begin="-0.6s"
+                  ></animateTransform>
+                </rect>
+                <rect
+                  x="42"
+                  y="6"
+                  width="8"
+                  height="44"
+                  rx="2"
+                  fill="url(#barGrad)"
+                  transformOrigin="46 40"
+                >
+                  <animateTransform
+                    attributeName="transform"
+                    type="scale"
+                    values="1 0.25;1 1;1 0.25"
+                    dur="1.2s"
+                    repeatCount="indefinite"
+                    begin="-0.3s"
+                  ></animateTransform>
+                </rect>
+                <rect
+                  x="58"
+                  y="14"
+                  width="8"
+                  height="36"
+                  rx="2"
+                  fill="url(#barGrad)"
+                  transformOrigin="62 40"
+                >
+                  <animateTransform
+                    attributeName="transform"
+                    type="scale"
+                    values="1 0.4;1 1;1 0.4"
+                    dur="1.2s"
+                    repeatCount="indefinite"
+                    begin="0s"
+                  ></animateTransform>
+                </rect>
+                <rect
+                  x="74"
+                  y="8"
+                  width="8"
+                  height="42"
+                  rx="2"
+                  fill="url(#barGrad)"
+                  transformOrigin="78 40"
+                >
+                  <animateTransform
+                    attributeName="transform"
+                    type="scale"
+                    values="1 0.28;1 1;1 0.28"
+                    dur="1.2s"
+                    repeatCount="indefinite"
+                    begin="0.3s"
+                  ></animateTransform>
+                </rect>
 
-        const light2 = new THREE.PointLight(0x0055ff, 50);
-        scene.add(light2);
+                <defs>
+                  <linearGradient id="barGrad" x1="0" x2="0" y1="0" y2="1">
+                    <stop
+                      offset="0%"
+                      stopColor="#a5f3fc"
+                      stopOpacity="0.95"
+                    ></stop>
+                    <stop
+                      offset="100%"
+                      stopColor="#1e3a8a"
+                      stopOpacity="0.25"
+                    ></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
 
-        const light3 = new THREE.PointLight(0x55ff00, 50);
-        scene.add(light3);
-
-        // OUTER GLASS SPHERE (PERFECT SOAP BUBBLE)
-        // Matches the exact rainbow thin-film interference seen in the reference image
-        const outerSphere = new THREE.Mesh(
-            new THREE.SphereGeometry(3, 128, 128),
-            new THREE.MeshPhysicalMaterial({
-                color: 0xffffff,
-                metalness: 0.1,
-                roughness: 0,
-                transmission: 1.0, // Fully glassy
-                ior: 1.05, // Very low IOR like a thin bubble, minimal distortion of the core
-                thickness: 0.05, // Thin wall
-                iridescence: 1.0, // Maximum rainbow effect
-                iridescenceIOR: 1.33, // Water/soap IOR
-                iridescenceThicknessRange: [200, 400], // Creates the thick rainbow gradient on the edges
-                transparent: true,
-                opacity: 1.0,
-                envMapIntensity: 2.0,
-                side: THREE.DoubleSide, // Renders both inside and outside reflections for maximum realism
-                depthWrite: false // Ensures inner core renders perfectly through the bubble
-            })
-        );
-        scene.add(outerSphere);
-        // Removed the artificial shineSphere rims completely!
-
-        // INNER BLACK LIQUID CORE
-        const innerCoreGeometry = new THREE.SphereGeometry(1.0, 64, 64);
-        
-        // Store original vertices for liquid ripple math
-        const positionAttribute = innerCoreGeometry.attributes.position;
-        const vertexData = [];
-        for (let i = 0; i < positionAttribute.count; i++) {
-            vertexData.push(new THREE.Vector3().fromBufferAttribute(positionAttribute, i));
-        }
-
-        const innerCore = new THREE.Mesh(
-            innerCoreGeometry,
-            new THREE.MeshPhysicalMaterial({
-                color: 0x000000, // Absolute pure glossy black
-                roughness: 0.1,
-                metalness: 0.8,
-                clearcoat: 1.0,
-                clearcoatRoughness: 0.1,
-                envMapIntensity: 3.0 // Very reflective
-            })
-        );
-        scene.add(innerCore);
-
-        // ANIMATION LOOP
-        let animationFrameId;
-        let time = 0;
-
-        const animate = () => {
-            animationFrameId = requestAnimationFrame(animate);
-
-            time += 0.015;
-
-            // Orbiting colorful lights
-            light1.position.x = Math.sin(time * 0.7) * 5;
-            light1.position.y = Math.cos(time * 0.5) * 5;
-            light1.position.z = Math.cos(time * 0.3) * 5;
-            light1.color.setHSL((time * 0.1) % 1, 0.8, 0.6);
-
-            light2.position.x = Math.cos(time * 0.3) * 5;
-            light2.position.y = Math.sin(time * 0.5) * 5;
-            light2.position.z = Math.sin(time * 0.7) * 5;
-            light2.color.setHSL((time * 0.1 + 0.33) % 1, 0.8, 0.6);
-
-            light3.position.x = Math.sin(time * 0.5) * 5;
-            light3.position.y = Math.cos(time * 0.3) * 5;
-            light3.position.z = Math.sin(time * 0.7) * 5;
-            light3.color.setHSL((time * 0.1 + 0.66) % 1, 0.8, 0.6);
-
-            if (container) {
-                container.style.filter = 'none';
-                // Auto-recover canvas size if it was lost during visibility changes
-                const currentW = container.clientWidth;
-                const currentH = container.clientHeight;
-                if (currentW > 0 && currentH > 0) {
-                    const canvas = renderer.domElement;
-                    const pixelRatio = renderer.getPixelRatio();
-                    if (canvas.width !== Math.floor(currentW * pixelRatio) || canvas.height !== Math.floor(currentH * pixelRatio)) {
-                        camera.aspect = currentW / currentH;
-                        camera.updateProjectionMatrix();
-                        renderer.setSize(currentW, currentH);
-                    }
-                }
-            }
-
-            // Inner core rotation
-            innerCore.rotation.x += 0.005;
-            innerCore.rotation.y += 0.008;
-
-            // Smoothly interpolate audioLevel towards targetAudioLevel
-            audioLevelRef.current += (targetAudioLevelRef.current - audioLevelRef.current) * 0.1;
-
-            // Keep base scale at 1.0 so it doesn't grow in volume, just ripples
-            const pulse = 1.0;
-
-            // Organic liquid vertex ripples (huge amorphous blobs)
-            const timeScaled = time * 2.5;
-            // Deformation intensity
-            const rippleIntensity = 0.05 + audioLevelRef.current * 0.15; 
-            
-            for (let i = 0; i < positionAttribute.count; i++) {
-                const v = vertexData[i];
-                // Lower frequency (0.8, 1.1) for massive, sweeping tendril-like stretches
-                const wave1 = Math.sin(v.x * 0.8 + timeScaled) * rippleIntensity;
-                const wave2 = Math.cos(v.y * 1.1 + timeScaled * 0.8) * rippleIntensity;
-                const wave3 = Math.sin(v.z * 0.9 + timeScaled * 1.2) * rippleIntensity;
-                
-                // Extra high-frequency micro-ripples when talking
-                const talkRipples = audioLevelRef.current * Math.sin(v.x * 3.0 - timeScaled * 2.0) * 0.05;
-                
-                // Prevent vertices from inverting through the center (clamp min to 0.1)
-                const displacement = Math.max(0.1, 1.0 + wave1 + wave2 + wave3 + talkRipples);
-                positionAttribute.setXYZ(i, v.x * displacement, v.y * displacement, v.z * displacement);
-            }
-            
-            positionAttribute.needsUpdate = true;
-            innerCore.geometry.computeVertexNormals(); // Crucial: recalculate normals so the glossy reflections warp over the ripples
-
-            // Global scale scatter pulse (extreme squashing on separate axes)
-            const wobbleX = 1 + Math.sin(time * 3.0) * 0.1;
-            const wobbleY = 1 + Math.cos(time * 2.2) * 0.1;
-            const wobbleZ = 1 + Math.sin(time * 1.7) * 0.1;
-            innerCore.scale.set(pulse * wobbleX, pulse * wobbleY, pulse * wobbleZ);
-
-            renderer.render(scene, camera);
-        };
-
-        animate();
-
-        // RESIZE HANDLER (Optional since component has fixed size usually, but good practice)
-        const handleResize = () => {
-            if (!mountRef.current) return;
-            const newW = mountRef.current.clientWidth;
-            const newH = mountRef.current.clientHeight;
-            camera.aspect = newW / newH;
-            camera.updateProjectionMatrix();
-            renderer.setSize(newW, newH);
-        };
-        window.addEventListener('resize', handleResize);
-
-        // CLEANUP
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            cancelAnimationFrame(animationFrameId);
-            if (container && renderer.domElement) {
-                container.removeChild(renderer.domElement);
-            }
-            renderer.dispose();
-        };
-    }, []);
-
-    // Update target audio level based on props
-    useEffect(() => {
-        if (isUserTalking || isAiTalking) {
-            // Simulate random energetic audio levels when talking
-            const interval = setInterval(() => {
-                targetAudioLevelRef.current = Math.random() * 0.8 + 0.2;
-            }, 100);
-            return () => {
-                clearInterval(interval);
-                targetAudioLevelRef.current = 0;
-            };
-        } else {
-            targetAudioLevelRef.current = 0;
-        }
-    }, [isUserTalking, isAiTalking]);
-
-    return (
-        <div 
-            ref={mountRef} 
-            className="organic-orb-container" 
-            style={{ width: '300px', height: '300px' }} 
-        />
-    );
+          <span className="omen-orb-glow"></span>
+        </div>
+      </div>
+    </button>
+  );
 };
 
 export default VoiceOrb;

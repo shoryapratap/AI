@@ -28,7 +28,7 @@ const MapWidget = ({ onClose }) => {
                 />
                 <Marker position={[51.505, -0.09]}>
                     <Popup>
-                        Emma AI is here.
+                        Omen AI is here.
                     </Popup>
                 </Marker>
             </MapContainer>

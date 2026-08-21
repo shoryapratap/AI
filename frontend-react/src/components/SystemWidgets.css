@@ -620,4 +620,93 @@
 }
 .custom-scroll::-webkit-scrollbar-thumb:hover {
     background-color: rgba(255, 255, 255, 0.4);
+}/* Omen Orb Custom Styles */
+.omen-orb-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.7s ease;
+    background: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    cursor: pointer;
+}
+.omen-orb-btn:hover {
+    transform: scale(1.05);
+}
+.omen-orb-btn:active {
+    transform: scale(0.95);
+}
+.omen-orb-container-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+.omen-orb-svg-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 260px;
+    height: 260px;
+}
+.omen-orb-svg-bg {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -10;
+}
+.omen-orb-ring-1 {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to top right, rgba(255,255,255,0.8), rgba(97,75,198,0.4), rgba(11,16,32,0.8));
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    width: 220px;
+    height: 220px;
+}
+.omen-orb-pulse {
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse-ring {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+}
+.omen-orb-core {
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, #0b1020 0%, #614BC6 40%, #E3EDF6 90%);
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    width: 78%;
+    height: 78%;
+    transition: all 0.7s ease;
+}
+.omen-orb-btn:hover .omen-orb-core {
+    filter: brightness(1.25);
+    transform: scale(1.05);
+}
+.omen-orb-equalizer {
+    width: 60%;
+    height: 60%;
+}
+.omen-orb-glow {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    width: 320px;
+    height: 320px;
+    left: -30px;
+    top: -30px;
+    filter: blur(28px);
+    opacity: 0.35;
+    background: radial-gradient(circle at 30% 30%, rgba(110,231,183,0.18), transparent 30%);
 }

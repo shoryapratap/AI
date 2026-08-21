@@ -27,8 +27,8 @@ let tray = null;
 let isQuitting = false;
 
 function createWindow() {
-    // Removed icon temporarily
-    const icon = nativeImage.createEmpty();
+    const iconPath = path.join(__dirname, 'frontend-react', 'public', 'omenicon.ico');
+    const icon = nativeImage.createFromPath(iconPath);
 
     mainWindow = new BrowserWindow({
         width: 1200,
@@ -263,12 +263,12 @@ ipcMain.handle('take-screenshot', async () => {
 app.whenReady().then(() => {
     createWindow();
     
-    // Temporarily use empty image for tray
-    const trayIcon = nativeImage.createEmpty();
+    const trayIconPath = path.join(__dirname, 'frontend-react', 'public', 'omenicon.ico');
+    const trayIcon = nativeImage.createFromPath(trayIconPath);
     tray = new Tray(trayIcon);
     
     const contextMenu = Menu.buildFromTemplate([
-        { label: 'Show Emma AI', click: () => {
+        { label: 'Show Omen AI', click: () => {
             if (mainWindow) mainWindow.show();
             else createWindow();
         }},
@@ -278,7 +278,7 @@ app.whenReady().then(() => {
         }}
     ]);
     
-    tray.setToolTip('Emma AI');
+    tray.setToolTip('Omen AI');
     tray.setContextMenu(contextMenu);
     
     tray.on('click', () => {

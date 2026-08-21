@@ -4,8 +4,8 @@ const Navbar = ({ activeView, setActiveView }) => {
     return (
         <header className="hud-navbar">
             <div className="nav-left">
-                <img src="assets/icon.png" className="logo-img" alt="Emma AI Logo" />
-                <span className="logo-text">EMMA<span className="logo-sub">AI</span></span>
+                <img src="omen.png" className="logo-img" alt="Omen AI Logo" />
+                <span className="logo-text">OMEN<span className="logo-sub">AI</span></span>
             </div>
             <nav className="nav-links-container">
                 <ul className="nav-links">
