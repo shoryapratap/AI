@@ -32,6 +32,23 @@ let mainWindow;
 let tray = null;
 let isQuitting = false;
 
+function hideAppWindow() {
+    if (mainWindow) {
+        // Fix for ghost shadow on Windows
+        if (process.platform === 'win32') mainWindow.setOpacity(0);
+        mainWindow.setSkipTaskbar(true);
+        mainWindow.hide();
+    }
+}
+
+function showAppWindow() {
+    if (mainWindow) {
+        mainWindow.show();
+        if (process.platform === 'win32') mainWindow.setOpacity(1);
+        mainWindow.setSkipTaskbar(false);
+    }
+}
+
 function createWindow() {
     const iconPath = app.isPackaged ? path.join(__dirname, 'dist', 'omenicon.ico') : path.join(__dirname, 'public', 'omenicon.ico');
     const icon = nativeImage.createFromPath(iconPath);
@@ -90,7 +107,7 @@ function createWindow() {
     mainWindow.on('close', (event) => {
         if (!isQuitting) {
             event.preventDefault();
-            mainWindow.hide();
+            hideAppWindow();
             return false;
         }
     });
@@ -120,7 +137,7 @@ ipcMain.on('win-maximize', () => {
 });
 
 ipcMain.on('win-close', () => {
-    if (mainWindow) mainWindow.hide();
+    hideAppWindow();
 });
 
 ipcMain.handle('scan-apps', async (event, forceFullScan) => {
@@ -276,7 +293,7 @@ app.whenReady().then(() => {
     const contextMenu = Menu.buildFromTemplate([
         {
             label: 'Show Omen AI', click: () => {
-                if (mainWindow) mainWindow.show();
+                if (mainWindow) showAppWindow();
                 else createWindow();
             }
         },
@@ -293,7 +310,7 @@ app.whenReady().then(() => {
 
     tray.on('click', () => {
         if (mainWindow) {
-            mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
+            mainWindow.isVisible() ? hideAppWindow() : showAppWindow();
         } else {
             createWindow();
         }

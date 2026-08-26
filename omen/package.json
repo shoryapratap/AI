@@ -7,8 +7,33 @@
     "start": "cross-env NODE_ENV=production electron .",
     "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
     "build": "vite build",
+    "dist": "npm run build && electron-builder",
     "lint": "eslint .",
     "preview": "vite preview"
+  },
+  "build": {
+    "appId": "com.shoryapratap.omen",
+    "productName": "Omen",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "src/services/**/*",
+      "src/config/**/*",
+      "public/**/*",
+      "main.js",
+      "preload.js",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/omenicon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   },
   "dependencies": {
     "@google/genai": "^2.10.0",
@@ -23,6 +48,7 @@
     "robotjs": "^0.9.1",
     "screenshot-desktop": "^1.15.6",
     "three": "^0.184.0",
+    "vosk-browser": "^0.0.8",
     "ws": "^8.21.0"
   },
   "devDependencies": {
@@ -33,6 +59,7 @@
     "concurrently": "^9.2.4",
     "cross-env": "^10.1.0",
     "electron": "^41.7.1",
+    "electron-builder": "^26.15.3",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",

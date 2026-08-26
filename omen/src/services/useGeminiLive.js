@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import aiCommands from '../config/ai_commands.json';
+import { AudioFusionEngine } from './AudioFusionEngine';
 
-export function useGeminiLive() {
+export function useGeminiLive({ isCameraAwake = false } = {}) {
     const [isConnected, setIsConnected] = useState(false);
     const [isAiTalking, setIsAiTalking] = useState(false);
     const [isUserTalking, setIsUserTalking] = useState(false);
@@ -42,6 +42,44 @@ export function useGeminiLive() {
     // Keep track of the current streaming AI text
     const currentAiResponseRef = useRef('');
     const processedCommandsLengthRef = useRef(0);
+
+    // Audio Fusion Engine (Handles sliding window buffer & cooldown)
+    const fusionEngineRef = useRef(null);
+
+    // Exposed function to allow external components (like VoskWakewordEngine) to trigger the gate
+    const forceWakeword = useCallback(() => {
+        if (fusionEngineRef.current) {
+            fusionEngineRef.current.triggerWakeword();
+        }
+    }, []);
+
+    useEffect(() => {
+        fusionEngineRef.current = new AudioFusionEngine((base64Data) => {
+            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({
+                    realtime_input: {
+                        audio: {
+                            mime_type: 'audio/pcm;rate=16000',
+                            data: base64Data
+                        }
+                    }
+                }));
+            }
+        });
+        
+        return () => {
+            if (fusionEngineRef.current) {
+                fusionEngineRef.current.reset();
+            }
+        };
+    }, []);
+
+    // Keep the engine updated with the camera state
+    useEffect(() => {
+        if (fusionEngineRef.current) {
+            fusionEngineRef.current.setAwake(isCameraAwake);
+        }
+    }, [isCameraAwake]);
 
     // Listen for Reminder Engine triggers
     useEffect(() => {
@@ -86,13 +124,20 @@ You MUST immediately speak out loud to tell the user about this reminder. Be hel
                 if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
 
                 const inputData = e.inputBuffer.getChannelData(0);
-
-                let sum = 0;
+                
+                // Calculate RMS (volume)
+                let sum = 0.0;
                 for (let i = 0; i < inputData.length; i++) {
                     sum += inputData[i] * inputData[i];
                 }
                 const rms = Math.sqrt(sum / inputData.length);
-                setIsUserTalking(rms > 0.05);
+                const isTalking = rms > 0.01;
+                setIsUserTalking(isTalking);
+
+                // --- Silence Detection ---
+                if (fusionEngineRef.current) {
+                    fusionEngineRef.current.updateRms(rms);
+                }
 
                 if (isMicMutedRef.current) return;
 
@@ -110,14 +155,9 @@ You MUST immediately speak out loud to tell the user about this reminder. Be hel
                 }
                 const base64Data = btoa(binary);
 
-                wsRef.current.send(JSON.stringify({
-                    realtime_input: {
-                        audio: {
-                            mime_type: 'audio/pcm;rate=16000',
-                            data: base64Data
-                        }
-                    }
-                }));
+                if (fusionEngineRef.current) {
+                    fusionEngineRef.current.processAudioChunk(base64Data);
+                }
             };
 
             source.connect(processor);
@@ -335,7 +375,7 @@ You MUST immediately speak out loud to tell the user about this reminder. Be hel
                         }
                     }
                 };
-                const combinedSystemPrompt = (systemPromptText ? systemPromptText + "\n\n" : "") + "Available Commands (MUST use this exact format):\n" + aiCommands.join("\n");
+                const combinedSystemPrompt = systemPromptText || "";
                 setupPayload.setup.systemInstruction = {
                     parts: [{ text: combinedSystemPrompt }]
                 };
@@ -455,6 +495,7 @@ You MUST immediately speak out loud to tell the user about this reminder. Be hel
         isMuted,
         toggleMute,
         isMicMuted,
-        toggleMicMute
+        toggleMicMute,
+        forceWakeword
     };
 }

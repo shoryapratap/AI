@@ -6,6 +6,8 @@ import VoiceOrb from '../components/VoiceOrb';
 import DateTimeWidget from '../components/DateTimeWidget';
 import SystemStatusWidget from '../components/SystemStatusWidget';
 import PlaceholderWidget from '../components/PlaceholderWidget';
+import AiCameraFeed from '../components/AiCameraFeed';
+import VoskWakewordEngine from '../components/VoskWakewordEngine';
 
 import FloatingActionSidebar from '../components/FloatingActionSidebar';
 import AppScannerWidget from '../components/AppScannerWidget';
@@ -20,6 +22,7 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
     const [isAppScannerOpen, setIsAppScannerOpen] = useState(false);
     const [isAiTalking, setIsAiTalking] = useState(false);
     const [isUserTalking, setIsUserTalking] = useState(false);
+    const [isCameraAwake, setIsCameraAwake] = useState(false);
     const [systemPrompt, setSystemPrompt] = useState('');
     const autoStartedRef = React.useRef(false);
     
@@ -27,7 +30,7 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
     const { isVisionActive, startVisionTask } = useVisionBrain();
 
     // 3. Gemini Live (Voice API) hook
-    const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage, isMuted, toggleMute, isMicMuted, toggleMicMute } = useGeminiLive();
+    const { isConnected, isAiTalking: geminiAiTalking, isUserTalking: geminiUserTalking, error, messages, setMessages, startConversation, stopConversation, sendTextMessage, isMuted, toggleMute, isMicMuted, toggleMicMute, forceWakeword } = useGeminiLive({ isCameraAwake });
 
     React.useEffect(() => {
         if (window.electronAPI && window.electronAPI.getSystemPrompt) {
@@ -70,8 +73,9 @@ const MainWorkspace = ({ activeModel, setActiveModel, isFocused }) => {
 
     return (
         <div id="main-view" className={`view-panel ${isFocused ? 'active' : ''}`}>
-            {/* Top Left Placeholder Windows - Always visible */}
-            <PlaceholderWidget title="AI Camera Feed" className="placeholder-1" icon={Camera} />
+            {/* Top Left Windows - Always visible */}
+            <AiCameraFeed className="placeholder-1" onAwakeChange={setIsCameraAwake} />
+            <VoskWakewordEngine onWakeword={forceWakeword} />
             <PlaceholderWidget title="Screen Share" className="placeholder-2" icon={MonitorPlay} />
 
             {/* Central Widgets - Fades out when map or app scanner is open */}

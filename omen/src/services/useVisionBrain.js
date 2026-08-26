@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { GoogleGenAI } from '@google/genai';
-import visionCommands from '../config/vision_commands.json';
 
 export function useVisionBrain() {
     const [isVisionActive, setIsVisionActive] = useState(false);
@@ -27,7 +26,7 @@ export function useVisionBrain() {
         let lastActionStatus = '';
         
         let systemInstruction = "You are an autonomous GUI agent. You can see the screen and execute actions.";
-        systemInstruction += "\nAvailable Commands:\n" + visionCommands.join('\n');
+        // systemInstruction is complete
         systemInstruction += "\nWhen the task is complete, output <COMMAND: VISION_COMPLETE></COMMAND>.";
         systemInstruction += "\nOutput ONLY one command at a time. Wait for the next screenshot before issuing the next command.";
         

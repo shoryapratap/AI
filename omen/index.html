@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- Use a strict Content Security Policy to secure the Electron Renderer -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://fastly.jsdelivr.net https://cubism.live2d.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://cdn.jsdelivr.net https://fastly.jsdelivr.net https://*.tile.openstreetmap.org https://server.arcgisonline.com https://*.google.com https://unpkg.com; connect-src 'self' https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com https://cdn.jsdelivr.net https://fastly.jsdelivr.net">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://fastly.jsdelivr.net https://cubism.live2d.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://cdn.jsdelivr.net https://fastly.jsdelivr.net https://*.tile.openstreetmap.org https://server.arcgisonline.com https://*.google.com https://unpkg.com; connect-src 'self' https://generativelanguage.googleapis.com wss://generativelanguage.googleapis.com https://cdn.jsdelivr.net https://fastly.jsdelivr.net">
     
     <title>Omen AI</title>
     
@@ -19,6 +19,12 @@
     <!-- Live2D Core Libraries -->
     <script src="./live2dcubismcore.min.js"></script>
     <script src="./live2d.min.js"></script>
+    
+    <!-- MediaPipe Libraries for Camera Tracking -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
     
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
