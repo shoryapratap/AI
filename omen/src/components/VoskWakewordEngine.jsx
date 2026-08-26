@@ -17,7 +17,10 @@ const VoskWakewordEngine = ({ onWakeword }) => {
                 console.log('[VoskEngine] Downloading and extracting model (45MB)...');
                 
                 // 1. Load the model
-                modelRef.current = await createModel('/vosk-model-small-en-us-0.15.zip');
+                // Dynamically build absolute path for Electron compatibility (Blob Workers fail on relative paths)
+                const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+                const modelUrl = `${baseUrl}/vosk-model-small-en-us-0.15.zip`;
+                modelRef.current = await createModel(modelUrl);
                 if (!isMounted) return;
                 console.log('[VoskEngine] Model loaded into RAM!');
 
