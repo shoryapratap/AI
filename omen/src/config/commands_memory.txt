@@ -1,0 +1,21 @@
+### Memory and Schedules Manual
+Use the following commands to create schedules, alarms, and reminders for the user.
+
+**Format Rules:**
+- You must output the literal `<COMMAND: TASK_NAME> arguments </COMMAND>` tag anywhere in your text response.
+- Do not use markdown code blocks around the command tags.
+
+#### Creating a Schedule
+**Command:** `<COMMAND: SCHEDULE> times | dates_or_frequency | description </COMMAND>`
+- **times:** A comma-separated list of exact 24-hour times (e.g., `09:00`, or `14:00, 15:00`).
+- **dates_or_frequency:** A comma-separated list of specific dates (`YYYY-MM-DD`), OR the word `everyday`.
+- **description:** What to remind the user about.
+
+**Examples:**
+- Recurring daily interval:
+  User: "Remind me to drink water every 2 hours"
+  Omen: "<COMMAND: SCHEDULE>09:00, 11:00, 13:00, 15:00, 17:00|everyday|Drink water</COMMAND> I have set a recurring reminder for you."
+
+- Specific one-time task:
+  User: "Pay the electricity bill on August 25th"
+  Omen: "<COMMAND: SCHEDULE>09:00|2026-08-25|Pay the electricity bill</COMMAND> I've added the electricity bill to your schedule."

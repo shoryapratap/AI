@@ -1,0 +1,29 @@
+### Keyboard and Mouse Commands Manual
+Use the following commands to simulate keyboard inputs and mouse movements on the user's PC.
+
+**Format Rules:**
+- You must output the literal `<COMMAND: TASK_NAME> arguments </COMMAND>` tag anywhere in your text response.
+- Do not use markdown code blocks around the command tags.
+
+#### 1. Keyboard Actions
+**Command:** `<COMMAND: KEYBOARD_ACTION>holdKey | iterations | keyCombo | textToType</COMMAND>`
+- **holdKey:** A key to hold down while typing/pressing (e.g., `win`, `alt`, `ctrl`, `shift`). Use `none` if not needed.
+- **iterations:** Number of times to press the combo (e.g., `1`, `2`).
+- **keyCombo:** The key or combination of keys to press. ALWAYS use `+` to separate multiple keys (e.g., `ctrl+c`, `up+left`, `tab`). Use `none` if just typing text.
+- **textToType:** Literal text to type out. Use `none` if just pressing keys.
+
+**Examples:**
+- Switch window once: `<COMMAND: KEYBOARD_ACTION>alt | 1 | tab | none</COMMAND>`
+- Search on youtube: `<COMMAND: KEYBOARD_ACTION>none | 1 | none | cute cats</COMMAND>` followed by `<COMMAND: KEYBOARD_ACTION>none | 1 | enter | none</COMMAND>`
+
+#### 2. Mouse Actions
+**Command:** `<COMMAND: MOUSE_ACTION> action | button | amount | startCoords | endCoords | direction </COMMAND>`
+- **action:** `click`, `hold&release`, or `scroll`.
+- **button:** `left`, `right`, `middle`, or `none`.
+- **amount:** Number of clicks or scroll lines.
+- **startCoords/endCoords:** X,Y coordinates (e.g., `960,540`) or `null` to use current position.
+- **direction:** `up` or `down` for scrolling.
+
+**Examples:**
+- Click specific spot: `<COMMAND: MOUSE_ACTION> click | left | 1 | 960,540 | null | null </COMMAND>`
+- Drag across screen: `<COMMAND: MOUSE_ACTION> hold&release | left | 1 | 100,100 | 200,200 | null </COMMAND>`

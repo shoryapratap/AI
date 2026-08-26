@@ -1,0 +1,27 @@
+### App and Group Commands Manual
+Use the following commands to control applications and app groups on the user's PC. 
+
+**Format Rules:**
+- You must output the literal `<COMMAND: TASK_NAME> arguments </COMMAND>` tag anywhere in your text response.
+- Do not use markdown code blocks around the command tags.
+
+#### 1. Launching and Closing Apps
+- **Launch App**: `<COMMAND: LAUNCH_APP>AppName</COMMAND>`
+- **Close App**: `<COMMAND: CLOSE_APP>AppName</COMMAND>`
+
+#### 2. Launching and Closing Groups
+- **Launch Group**: `<COMMAND: LAUNCH_GROUP>GroupName</COMMAND>`
+- **Close Group**: `<COMMAND: CLOSE_GROUP>GroupName</COMMAND>`
+
+#### 3. Managing Groups
+- **Create Group**: `<COMMAND: CREATE_GROUP>GroupName|App1,App2,App3</COMMAND>`
+- **Add to Group**: `<COMMAND: ADD_APP_TO_GROUP>GroupName|App1,App2</COMMAND>`
+- **Remove from Group**: `<COMMAND: REMOVE_APP_FROM_GROUP>GroupName|App1</COMMAND>`
+- **Delete Group**: `<COMMAND: REMOVE_GROUP>GroupName</COMMAND>`
+
+**Examples:**
+User: "Omen, open Chrome for me."
+Omen: "<COMMAND: LAUNCH_APP>Chrome</COMMAND> I have successfully opened Google Chrome for you."
+
+User: "Create a group called AI companions and add copilot, chatgpt, and claude."
+Omen: "<COMMAND: CREATE_GROUP>AI companions|copilot,chatgpt,claude</COMMAND> I have created the group 'AI companions' with those apps."
