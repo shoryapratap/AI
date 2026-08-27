@@ -106,7 +106,8 @@ const AiCameraFeed = ({ className, onAwakeChange }) => {
                 onFrame: async () => {
                     if (faceMesh) {
                         const now = performance.now();
-                        if (now - lastProcessTime > 100) { // Throttle to ~10 FPS
+                        // Throttle to ~5 FPS to drastically reduce CPU/GPU usage on low-end machines
+                        if (now - lastProcessTime > 200) { 
                             lastProcessTime = now;
                             await faceMesh.send({ image: videoElement });
                         }

@@ -1,6 +1,10 @@
 const { app, BrowserWindow, ipcMain, nativeImage, Tray, Menu } = require('electron');
 const path = require('path');
 
+// Fix for Windows DWM / Explorer.exe black screen crashes when minimizing WebGL
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+
 // Set the userData path to AppData/Local/Omen
 app.setPath('userData', path.join(app.getPath('appData'), '../Local/Omen'));
 
@@ -70,6 +74,7 @@ function createWindow() {
             nodeIntegration: false,
             sandbox: false,
             webSecurity: false,
+            backgroundThrottling: false
         }
     });
 

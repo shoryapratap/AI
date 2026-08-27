@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Mic, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 
-const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateChange, isMicActive, onToggleMic, voiceError, isMuted, onToggleMute }) => {
+const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateChange, isMicActive, onToggleMic, voiceError, isMuted, onToggleMute, isSleepMode }) => {
     const [query, setQuery] = useState('');
     const [isThinking, setIsThinking] = useState(false);
 
@@ -37,7 +37,7 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
         alert("File Attachment System: Select documents or workspace files for context.");
     };
 
-    const modelName = activeModel === 'flash' ? 'Omen-Flash' : (activeModel === 'pro' ? 'Omen-Pro' : 'Omen-Ultra');
+    const modelName = isSleepMode ? '🌙 Sleeping' : (activeModel === 'flash' ? 'Omen-Flash' : (activeModel === 'pro' ? 'Omen-Pro' : 'Omen-Ultra'));
 
     return (
         <div className="capsule-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -57,9 +57,9 @@ const InputCapsule = ({ activeModel, setActiveModel, onSendMessage, onMicStateCh
                 />
                 
                 <div className="capsule-right-controls">
-                    <div className="model-selector-pill" onClick={toggleModel}>
+                    <div className="model-selector-pill" onClick={toggleModel} style={isSleepMode ? { color: '#c4b5fd', borderColor: 'rgba(139, 92, 246, 0.4)', backgroundColor: 'rgba(139, 92, 246, 0.15)' } : {}}>
                         <span className="model-name">{modelName}</span>
-                        <ChevronDown size={16} className="dropdown-arrow" />
+                        {!isSleepMode && <ChevronDown size={16} className="dropdown-arrow" />}
                     </div>
                     
                     <button 

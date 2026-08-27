@@ -5,6 +5,7 @@ export function useGeminiLive({ isCameraAwake = false } = {}) {
     const [isConnected, setIsConnected] = useState(false);
     const [isAiTalking, setIsAiTalking] = useState(false);
     const [isUserTalking, setIsUserTalking] = useState(false);
+    const [isSleepMode, setIsSleepMode] = useState(false);
     
     // Mute control
     const [isMuted, _setIsMuted] = useState(false);
@@ -48,6 +49,7 @@ export function useGeminiLive({ isCameraAwake = false } = {}) {
 
     // Exposed function to allow external components (like VoskWakewordEngine) to trigger the gate
     const forceWakeword = useCallback(() => {
+        setIsSleepMode(false); // Wake up!
         if (fusionEngineRef.current) {
             fusionEngineRef.current.triggerWakeword();
         }
@@ -80,6 +82,27 @@ export function useGeminiLive({ isCameraAwake = false } = {}) {
             fusionEngineRef.current.setAwake(isCameraAwake);
         }
     }, [isCameraAwake]);
+
+    // Keep the engine updated with sleep mode
+    useEffect(() => {
+        if (fusionEngineRef.current) {
+            fusionEngineRef.current.setSleepMode(isSleepMode);
+        }
+    }, [isSleepMode]);
+
+    // Auto-Sleep Timer (15s)
+    useEffect(() => {
+        if (isSleepMode) return; // Already asleep
+
+        // Timer starts only based on when Omen stops talking
+        if (!isAiTalking) {
+            const timeout = setTimeout(() => {
+                console.log("15s since Omen last spoke. Activating Sleep Mode.");
+                setIsSleepMode(true);
+            }, 15000); // 15 seconds
+            return () => clearTimeout(timeout);
+        }
+    }, [isAiTalking, isSleepMode]);
 
     // Listen for Reminder Engine triggers
     useEffect(() => {
@@ -131,7 +154,7 @@ You MUST immediately speak out loud to tell the user about this reminder. Be hel
                     sum += inputData[i] * inputData[i];
                 }
                 const rms = Math.sqrt(sum / inputData.length);
-                const isTalking = rms > 0.01;
+                const isTalking = rms > 0.05;
                 setIsUserTalking(isTalking);
 
                 // --- Silence Detection ---
@@ -240,6 +263,24 @@ You MUST immediately speak out loud to tell the user about this reminder. Be hel
                 if (content.modelTurn && content.modelTurn.parts) {
                     console.log("Model parts received:", content.modelTurn.parts); // DEBUG LOG
                     for (const part of content.modelTurn.parts) {
+                        if (part.functionCall) {
+                            if (part.functionCall.name === "enable_sleep_mode") {
+                                console.log("Gemini triggered enable_sleep_mode!");
+                                setIsSleepMode(true);
+                                // Send functionResponse back to acknowledge
+                                if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                                    wsRef.current.send(JSON.stringify({
+                                        toolResponse: {
+                                            functionResponses: [{
+                                                id: part.functionCall.id,
+                                                name: "enable_sleep_mode",
+                                                response: { result: "sleep mode activated" }
+                                            }]
+                                        }
+                                    }));
+                                }
+                            }
+                        }
                         if (part.text) {
                             newText += part.text;
                         }
@@ -280,12 +321,18 @@ You MUST immediately speak out loud to tell the user about this reminder. Be hel
                 currentAiResponseRef.current += newText;
 
                 // Extract any fully formed commands that haven't been processed yet
-                const commandsMatch = [...currentAiResponseRef.current.matchAll(/<COMMAND:\s*[^>]+>[\s\S]*?<\/COMMAND>/gi)];
+                const commandsMatch = [...currentAiResponseRef.current.matchAll(/<COMMAND:\s*([^>]+)>([\s\S]*?)<\/COMMAND>/gi)];
                 if (commandsMatch.length > processedCommandsLengthRef.current) {
                     for (let i = processedCommandsLengthRef.current; i < commandsMatch.length; i++) {
+                        const commandName = commandsMatch[i][1].trim();
                         const commandStr = commandsMatch[i][0];
                         console.log("Extracted command from text stream:", commandStr);
                         
+                        if (commandName === 'SLEEP') {
+                            setIsSleepMode(true);
+                            continue;
+                        }
+
                         if (window.electronAPI && window.electronAPI.handleAITask) {
                             window.electronAPI.handleAITask(commandStr);
                         }
@@ -496,6 +543,7 @@ You MUST immediately speak out loud to tell the user about this reminder. Be hel
         toggleMute,
         isMicMuted,
         toggleMicMute,
+        isSleepMode,
         forceWakeword
     };
 }

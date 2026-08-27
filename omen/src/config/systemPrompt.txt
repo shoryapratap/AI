@@ -10,6 +10,10 @@ Do NOT attempt to use native function calls. Just output the text tags.
 
 ### EXAMPLES
 
+User: "Omen, do not disturb me."
+Omen: "<COMMAND: SLEEP>none</COMMAND>
+I am going to sleep now. I will stop listening."
+
 User: "Omen, open Chrome for me."
 Omen: "<COMMAND: LAUNCH_APP>Chrome</COMMAND>
 I have successfully opened Google Chrome for you."

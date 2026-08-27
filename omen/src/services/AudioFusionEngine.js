@@ -11,12 +11,26 @@ export class AudioFusionEngine {
         this.cooldownTimeout = null;
         this.cooldownMs = 2000;
 
+        // Sleep Mode (Master Switch)
+        this.isSleepMode = true; // Start asleep by default? Wait, let's start asleep until wake word. Actually let's start false to match current behavior, let useGeminiLive handle initial state.
+        this.isSleepMode = false;
+
         // Wakeword & Silence Logic
         this.isWakewordActive = false;
         this.wakewordTimeout = null;
         this.silenceTimeout = null;
         this.silenceCutoffMs = 1500;
         this.isSilent = true;
+    }
+
+    setSleepMode(sleeping) {
+        this.isSleepMode = sleeping;
+        if (sleeping) {
+            console.log("[AudioFusion] Sleep Mode ACTIVATED. Microphone completely muted.");
+            this._endWakeword(); // Force close wakeword gate if it was open
+        } else {
+            console.log("[AudioFusion] Sleep Mode DEACTIVATED. Entering Active Mode.");
+        }
     }
 
     setAwake(awake) {
@@ -58,8 +72,8 @@ export class AudioFusionEngine {
     }
 
     processAudioChunk(base64Data) {
-        // If the AI is awake (via Camera) OR Wakeword is active, pass audio to WebSocket
-        if (this.isAwake || this.isWakewordActive) {
+        // If we are NOT in Sleep Mode, AND (AI is awake via Camera OR Wakeword is active)
+        if (!this.isSleepMode && (this.isAwake || this.isWakewordActive)) {
             this.onFlushData(base64Data);
         } else {
             // We are muted. Secretly record to the sliding window buffer.
@@ -74,6 +88,7 @@ export class AudioFusionEngine {
 
     reset() {
         this.isAwake = false;
+        this.isSleepMode = false;
         this.buffer = [];
         this.isWakewordActive = false;
         if (this.cooldownTimeout) {
